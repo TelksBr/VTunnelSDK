@@ -123,23 +123,29 @@
   let timerSeconds = 3600;
 
   function initSdkSimulator() {
-    if (typeof window.DTunnelSDK !== 'function' || typeof window.DTunnelSDKSimulator === 'undefined') {
+    const SDKClass = window.VTunnelSDK || window.DTunnelSDK;
+    const SimulatorLib = window.VTunnelSDKSimulator || window.DTunnelSDKSimulator;
+
+    if (typeof SDKClass !== 'function' || typeof SimulatorLib === 'undefined') {
       appendConsole('WARN', 'SDK ou Simulador não carregados.');
       return;
     }
 
     try {
-      simulator = window.DTunnelSDKSimulator.installDTunnelSDKSimulator({
+      const installFn = SimulatorLib.installVTunnelSDKSimulator || SimulatorLib.installDTunnelSDKSimulator;
+      simulator = installFn({
         autoEvents: true,
         allowInWebView: true,
       });
 
-      sdk = new window.DTunnelSDK({
+      sdk = new SDKClass({
         strict: false,
         autoRegisterNativeEvents: true,
       });
 
+      window.__vtunnelSdk = sdk;
       window.__dtunnelSdk = sdk;
+      window.__vtunnelSimulator = simulator;
       window.__dtunnelSimulator = simulator;
 
       updateHeroPhoneUI(sdk.main.getVpnState());
@@ -345,6 +351,35 @@
         case 'createSnapshot': {
           const snap = sdk.createDebugSnapshot();
           appendConsole('CALL', 'sdk.createDebugSnapshot()', snap);
+          break;
+        }
+        case 'dnsGet': {
+          const dnsConfig = sdk.dns.get();
+          appendConsole('CALL', 'sdk.dns.get()', dnsConfig);
+          break;
+        }
+        case 'dnsPresets': {
+          const presets = sdk.dns.getPresets();
+          appendConsole('CALL', 'sdk.dns.getPresets()', presets);
+          break;
+        }
+        case 'dnsSetCloudflare': {
+          sdk.dns.set('1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001');
+          appendConsole('CALL', 'sdk.dns.set("1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001")');
+          showToast(dict.toastDnsSaved || 'DNS Cloudflare ativado!');
+          break;
+        }
+        case 'dnsToggleEnabled': {
+          const current = sdk.dns.isEnabled();
+          sdk.dns.setEnabled(!current);
+          appendConsole('CALL', `sdk.dns.setEnabled(${!current})`);
+          showToast(`DNS Customizado: ${!current ? 'ATIVADO' : 'DESATIVADO'}`);
+          break;
+        }
+        case 'dnsShowDialog': {
+          sdk.dns.showDialog();
+          appendConsole('CALL', 'sdk.dns.showDialog()');
+          showToast(dict.toastDnsDialog || 'Abrindo diálogo de DNS');
           break;
         }
         default:

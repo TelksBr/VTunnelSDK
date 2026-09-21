@@ -1,102 +1,81 @@
-# Eventos e Callbacks
+# 📡 Eventos e Callbacks Nativos - VTunnel SDK
 
-## Eventos semanticos (`sdk.on`)
+O VTunnel SDK unifica todos os disparos assíncronos do host Android em uma API de eventos orientada a eventos (`EventEmitter`), com parsing automático de JSON, tipagem estrita no TypeScript e compatibilidade com nomes legados.
 
-| Evento | Callback nativo / Alias legada | Payload no SDK |
-| --- | --- | --- |
-| `vpnState` | `DtVpnStateEvent(state)` / `dtVpnStateListener(state)` | `DTunnelVPNState \| null` |
-| `vpnStartedSuccess` | `DtVpnStartedSuccessEvent()` / `dtVpnStartedSuccessListener()` | `undefined` |
-| `vpnStoppedSuccess` | `DtVpnStoppedSuccessEvent()` / `dtVpnStoppedSuccessListener()` | `undefined` |
-| `newLog` | `DtNewLogEvent()` / `dtOnNewLogListener()` | `undefined` |
-| `newDefaultConfig` | `DtNewDefaultConfigEvent()` / `dtConfigClickListener()` | `undefined` |
-| `checkUserStarted` | `DtCheckUserStartedEvent()` / `dtCheckUserStartedListener()` | `undefined` |
-| `checkUserResult` | `DtCheckUserResultEvent(json)` / `dtCheckUserModelListener(json)` | `DTunnelCheckUserResult \| string \| null` |
-| `checkUserError` | `DtCheckUserErrorEvent(message)` / `dtCheckUserErrorListener(message)` | `string \| null` |
-| `messageError` | `DtMessageErrorEvent(json)` / `dtMessageErrorListener(json)` | `DTunnelMessage \| string \| null` |
-| `showSuccessToast` | `DtSuccessToastEvent(message)` / `dtShowSuccessToastListener(message)` | `string \| null` |
-| `showErrorToast` | `DtErrorToastEvent(message)` / `dtShowErrorToastListener(message)` | `string \| null` |
-| `notification` | `DtNotificationEvent(json)` | `DTunnelNotification \| string \| null` |
-| `localIp` | `DtLocalIpEvent(ip)` / `dtLocalIpListener(ip)` | `string \| null` |
-| `networkName` | `DtNetworkNameEvent(name)` / `dtNetworkNameListener(name)` | `string \| null` |
-| `pingResult` | `DtPingResultEvent(ping)` / `dtPingResultListener(ping)` | `string \| null` |
-| `checkingAppUpdate` | `DtCheckingAppUpdateEvent(isChecking)` / `dtCheckingAppUpdateListener(isChecking)` | `boolean \| string \| null` |
-| `airplaneState` | `DtAirplaneStateEvent(state)` / `dtAirplaneStateListener(state)` | `DTunnelAirplaneState \| string \| null` |
-| `hotSpotState` | `DtHotSpotStateEvent(status)` / `dtHotSpotStateListener(status)` | `DTunnelHotSpotStatus \| string \| null` |
-| `reloadRequest` | `DtReloadRequestEvent(value)` / `dtReloadRequestListener(value)` | `string \| null` |
+---
 
-Observacao:
+## 📋 Tabela Geral de Eventos Semânticos
 
-- `checkUserResult`, `messageError` e `notification` sao parseados como JSON pelo SDK quando possivel.
-- Se o parse falhar, o valor permanece `string`.
+| Evento Semântico | Callbacks Nativos Android (`Vt` e `Dt`) | Tipo do Payload no SDK |
+| :--- | :--- | :--- |
+| `vpnState` | `VtVpnStateEvent(state)` / `vtVpnStateListener(state)`<br>`DtVpnStateEvent(state)` / `dtVpnStateListener(state)` | `VTunnelVPNState \| null` |
+| `vpnStartedSuccess` | `VtVpnStartedSuccessEvent()` / `vtVpnStartedSuccessListener()`<br>`DtVpnStartedSuccessEvent()` / `dtVpnStartedSuccessListener()` | `undefined` |
+| `vpnStoppedSuccess` | `VtVpnStoppedSuccessEvent()` / `vtVpnStoppedSuccessListener()`<br>`DtVpnStoppedSuccessEvent()` / `dtVpnStoppedSuccessListener()` | `undefined` |
+| `newLog` | `VtNewLogEvent()` / `vtOnNewLogListener()`<br>`DtNewLogEvent()` / `dtOnNewLogListener()` | `undefined` |
+| `newDefaultConfig` | `VtNewDefaultConfigEvent()` / `vtConfigClickListener()`<br>`DtNewDefaultConfigEvent()` / `dtConfigClickListener()` | `undefined` |
+| `checkUserStarted` | `VtCheckUserStartedEvent()` / `vtCheckUserStartedListener()`<br>`DtCheckUserStartedEvent()` / `dtCheckUserStartedListener()` | `undefined` |
+| `checkUserResult` | `VtCheckUserResultEvent(json)` / `vtCheckUserModelListener(json)`<br>`DtCheckUserResultEvent(json)` / `dtCheckUserModelListener(json)` | `VTunnelCheckUserResult \| null` |
+| `checkUserError` | `VtCheckUserErrorEvent(msg)` / `vtCheckUserErrorListener(msg)`<br>`DtCheckUserErrorEvent(msg)` / `dtCheckUserErrorListener(msg)` | `string \| null` |
+| `messageError` | `VtMessageErrorEvent(json)` / `vtMessageErrorListener(json)`<br>`DtMessageErrorEvent(json)` / `dtMessageErrorListener(json)` | `VTunnelMessage \| null` |
+| `showSuccessToast` | `VtSuccessToastEvent(msg)` / `vtShowSuccessToastListener(msg)`<br>`DtSuccessToastEvent(msg)` / `dtShowSuccessToastListener(msg)` | `string \| null` |
+| `showErrorToast` | `VtErrorToastEvent(msg)` / `vtShowErrorToastListener(msg)`<br>`DtErrorToastEvent(msg)` / `dtShowErrorToastListener(msg)` | `string \| null` |
+| `notification` | `VtNotificationEvent(json)`<br>`DtNotificationEvent(json)` | `VTunnelNotification \| null` |
+| `localIp` | `VtLocalIpEvent(ip)` / `vtLocalIpListener(ip)`<br>`DtLocalIpEvent(ip)` / `dtLocalIpListener(ip)` | `string \| null` |
+| `networkName` | `VtNetworkNameEvent(name)` / `vtNetworkNameListener(name)`<br>`DtNetworkNameEvent(name)` / `dtNetworkNameListener(name)` | `string \| null` |
+| `pingResult` | `VtPingResultEvent(ping)` / `vtPingResultListener(ping)`<br>`DtPingResultEvent(ping)` / `dtPingResultListener(ping)` | `string \| null` |
+| `checkingAppUpdate` | `VtCheckingAppUpdateEvent(bool)` / `vtCheckingAppUpdateListener(bool)`<br>`DtCheckingAppUpdateEvent(bool)` / `dtCheckingAppUpdateListener(bool)` | `boolean \| null` |
+| `airplaneState` | `VtAirplaneStateEvent(state)` / `vtAirplaneStateListener(state)`<br>`DtAirplaneStateEvent(state)` / `dtAirplaneStateListener(state)` | `VTunnelAirplaneState \| null` |
+| `hotSpotState` | `VtHotSpotStateEvent(status)` / `vtHotSpotStateListener(status)`<br>`DtHotSpotStateEvent(status)` / `dtHotSpotStateListener(status)` | `VTunnelHotSpotStatus \| null` |
+| `reloadRequest` | `VtReloadRequestEvent()` / `vtReloadRequestListener()`<br>`DtReloadRequestEvent()` / `dtReloadRequestListener()` | `string \| null` |
 
-## Tipos de inscricao
+---
 
+## 🎯 Modos de Inscrição
+
+O SDK oferece 4 formas flexíveis de ouvir eventos:
+
+### 1. Inscrição por Nome Semântico (Recomendado)
+Escuta eventos pelo nome limpo e amigável:
 ```ts
-sdk.on('vpnState', (event) => {});
-sdk.on('nativeEvent', (event) => {});
-sdk.on('native:DtVpnStateEvent', (event) => {});
-sdk.on('error', (event) => {});
-
-sdk.once(...);
-sdk.off(...);
-```
-
-## Exemplo completo
-
-```ts
-import DTunnelSDK from 'dtunnel-sdk';
-
-const sdk = new DTunnelSDK({ strict: false, autoRegisterNativeEvents: true });
-
-const unbindVpn = sdk.on('vpnState', (event) => {
-  console.log('vpnState:', event.payload);
+const unbind = sdk.on('vpnState', (event) => {
+  console.log('Novo estado da VPN:', event.payload); // Ex: 'CONNECTED'
+  console.log('Callback nativo de origem:', event.callbackName); // Ex: 'VtVpnStateEvent'
+  console.log('Timestamp:', event.timestamp);
 });
 
+// Remover o listener
+unbind();
+```
+
+### 2. Inscrição para Todos os Eventos Nativos (`nativeEvent`)
+Captura qualquer evento disparado pelo Android, ideal para logging, telemetria e depuração:
+```ts
 sdk.on('nativeEvent', (event) => {
-  console.log('native:', event.callbackName, event.payload);
+  console.log(`[EVENTO NATIVO] ${event.callbackName}`, event.payload);
 });
-
-sdk.on('native:DtNotificationEvent', (event) => {
-  console.log('notification payload:', event.payload);
-});
-
-sdk.on('error', (event) => {
-  console.error(event.error.code, event.error.message, event.error.details);
-});
-
-// quando nao precisar mais:
-unbindVpn();
 ```
 
-## Callbacks globais da bridge
-
-Quando `autoRegisterNativeEvents: true` (padrao), o SDK registra automaticamente no `window` tanto os nomes padronizados (`Dt...Event`) quanto as aliases legadas (`dt...Listener`):
-
-- `DtVpnStateEvent` / `dtVpnStateListener`
-- `DtVpnStartedSuccessEvent` / `dtVpnStartedSuccessListener`
-- `DtVpnStoppedSuccessEvent` / `dtVpnStoppedSuccessListener`
-- `DtNewLogEvent` / `dtOnNewLogListener`
-- `DtNewDefaultConfigEvent` / `dtConfigClickListener`
-- `DtCheckUserStartedEvent` / `dtCheckUserStartedListener`
-- `DtCheckUserResultEvent` / `dtCheckUserModelListener`
-- `DtCheckUserErrorEvent` / `dtCheckUserErrorListener`
-- `DtMessageErrorEvent` / `dtMessageErrorListener`
-- `DtSuccessToastEvent` / `dtShowSuccessToastListener`
-- `DtErrorToastEvent` / `dtShowErrorToastListener`
-- `DtNotificationEvent`
-- `DtLocalIpEvent` / `dtLocalIpListener`
-- `DtNetworkNameEvent` / `dtNetworkNameListener`
-- `DtPingResultEvent` / `dtPingResultListener`
-- `DtCheckingAppUpdateEvent` / `dtCheckingAppUpdateListener`
-- `DtAirplaneStateEvent` / `dtAirplaneStateListener`
-- `DtHotSpotStateEvent` / `dtHotSpotStateListener`
-- `DtReloadRequestEvent` / `dtReloadRequestListener`
-
-Se precisar controlar manualmente:
-
+### 3. Inscrição por Callback Nativo Específico (`native:<nome>`)
+Permite ouvir diretamente um callback nativo de interesse:
 ```ts
-const sdk = new DTunnelSDK({ autoRegisterNativeEvents: false });
-sdk.registerNativeEventHandlers();
-// ...
-sdk.unregisterNativeEventHandlers();
+sdk.on('native:VtNotificationEvent', (event) => {
+  console.log('Notificação recebida:', event.payload);
+});
 ```
+
+### 4. Inscrição para Erros da Bridge (`error`)
+Captura falhas de comunicação e métodos ausentes sem derrubar a aplicação:
+```ts
+sdk.on('error', (event) => {
+  console.error(`Erro [${event.error.code}]:`, event.error.message);
+  console.error('Detalhes adicionais:', event.error.details);
+});
+```
+
+---
+
+## 💡 Ciclo de Vida e Boas Práticas
+
+1. **Sempre guarde o retorno de `sdk.on(...)`** para cancelar inscrições quando componentes de interface forem desmontados.
+2. No React, utilize preferencialmente o hook `useVTunnelEvent(eventName, callback)` que cancela automaticamente no unmount.
+3. Se estiver usando `strict: false`, certifique-se de registrar um listener para `'error'` para monitorar anomalias na bridge.

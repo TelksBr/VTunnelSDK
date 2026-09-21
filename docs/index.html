@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DTunnel SDK - Documentação Oficial & Referência da API</title>
-  <meta name="description" content="Documentação oficial do DTunnel SDK no padrão visual do DTunnel Control Center. Suporte completo a TypeScript, React e Android.">
+  <title>VTunnel SDK - Documentação Oficial & Referência da API</title>
+  <meta name="description" content="Documentação oficial do VTunnel SDK (com suporte retrocompatível a DTunnel SDK). Suporte completo a TypeScript, React, Android e DNS customizado IPv4/IPv6.">
   <link rel="stylesheet" href="./style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
 </head>
 <body>
 
-  <!-- Site Header (DTunnel Control Center Topbar) -->
+  <!-- Site Header (VTunnel Control Center Topbar) -->
   <header class="site-header">
     <div class="brand-wrapper">
       <a href="#" class="brand">
-        <div class="brand-mark">DT</div>
+        <div class="brand-mark">VT</div>
         <div class="brand-info">
           <div class="brand-text">
-            DTunnel <span style="font-weight:400;color:var(--accent-cyan);margin-left:2px;">SDK</span>
-            <span class="brand-badge">v2.0.0</span>
+            VTunnel <span style="font-weight:400;color:var(--accent-cyan);margin-left:2px;">SDK</span>
+            <span class="brand-badge">v2.1.0</span>
           </div>
           <span class="brand-subtext">Developer Documentation</span>
         </div>
@@ -60,7 +60,7 @@
         <span data-i18n="nav.playground">Playground</span>
       </a>
 
-      <a href="https://github.com/DTunnel0/DTunnelSDK" target="_blank" rel="noreferrer" class="btn-dt-control header-btn-desktop">
+      <a href="https://github.com/TelksBr/VTunnelSDK" target="_blank" rel="noreferrer" class="btn-dt-control header-btn-desktop">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
         GitHub
       </a>
@@ -106,6 +106,7 @@
         <ul class="sidebar-links">
           <li><a href="#modulo-main" class="sidebar-link">sdk.main <span class="sidebar-tag">VPN & Ads</span></a></li>
           <li><a href="#modulo-config" class="sidebar-link">sdk.config <span class="sidebar-tag">Configs & Import</span></a></li>
+          <li><a href="#modulo-dns" class="sidebar-link">sdk.dns <span class="sidebar-tag" style="background:#1c222c;color:var(--accent-cyan);">DNS Custom</span></a></li>
           <li><a href="#modulo-android" class="sidebar-link">sdk.android <span class="sidebar-tag">Device & UI</span></a></li>
           <li><a href="#modulo-app" class="sidebar-link">sdk.app <span class="sidebar-tag">App & Telas</span></a></li>
           <li><a href="#modulo-text" class="sidebar-link">sdk.text <span class="sidebar-tag">i18n</span></a></li>
@@ -627,6 +628,95 @@ document.getElementById('btnDisconnect')?.addEventListener('click', () => {
           </div>
         </section>
 
+        <!-- Módulo: sdk.dns -->
+        <section id="modulo-dns">
+          <h2 data-i18n="moduleDns.title">Módulo sdk.dns (DNS Customizado IPv4 & IPv6)</h2>
+          <p data-i18n="moduleDns.desc">Gerencia resolução de DNS customizado primário e secundário (IPv4 e IPv6) para contornar bloqueios de operadoras e priorizar servidores de alta velocidade.</p>
+
+          <div class="api-card">
+            <div class="api-card-header">
+              <span class="api-signature">sdk.dns.get(): VTunnelCustomDnsConfig | null</span>
+              <div class="api-badge-group">
+                <span class="method-tag get">GET</span>
+                <button class="btn-run-api" data-play-action="dnsGet">▶ Executar</button>
+              </div>
+            </div>
+            <div class="api-card-body">
+              <p data-i18n="moduleDns.getDesc">Retorna a configuração atual de DNS customizado ({ enabled, primary, secondary, ipv6Primary, ipv6Secondary }).</p>
+              <div class="return-box"><span class="return-label">Bridge:</span> <code>window.VtCustomDns.get()</code></div>
+            </div>
+          </div>
+
+          <div class="api-card">
+            <div class="api-card-header">
+              <span class="api-signature">sdk.dns.isEnabled(): boolean</span>
+              <div class="api-badge-group">
+                <span class="method-tag get">GET</span>
+                <button class="btn-run-api" data-play-action="dnsToggleEnabled">▶ Alternar</button>
+              </div>
+            </div>
+            <div class="api-card-body">
+              <p data-i18n="moduleDns.isEnabledDesc">Verifica se o uso de DNS customizado está ativo no aplicativo.</p>
+              <div class="return-box"><span class="return-label">Bridge:</span> <code>window.VtCustomDns.isEnabled()</code></div>
+            </div>
+          </div>
+
+          <div class="api-card">
+            <div class="api-card-header">
+              <span class="api-signature">sdk.dns.set(primaryOrConfig: string | VTunnelCustomDnsConfig, secondary?: string, ipv6Primary?: string, ipv6Secondary?: string): void</span>
+              <div class="api-badge-group">
+                <span class="method-tag set">SET</span>
+                <button class="btn-run-api" data-play-action="dnsSetCloudflare">▶ Cloudflare</button>
+              </div>
+            </div>
+            <div class="api-card-body">
+              <p data-i18n="moduleDns.setDesc">Define os servidores DNS primário e secundário IPv4/IPv6 de forma direta ou passando um objeto de configuração.</p>
+              <div class="return-box"><span class="return-label">Bridge:</span> <code>window.VtCustomDns.set(...)</code></div>
+            </div>
+          </div>
+
+          <div class="api-card">
+            <div class="api-card-header">
+              <span class="api-signature">sdk.dns.save(config: Partial&lt;VTunnelCustomDnsConfig&gt;): void</span>
+              <div class="api-badge-group">
+                <span class="method-tag set">SET</span>
+              </div>
+            </div>
+            <div class="api-card-body">
+              <p data-i18n="moduleDns.saveDesc">Salva parcialmente ou totalmente os campos de DNS customizado no armazenamento persistente do Android.</p>
+              <div class="return-box"><span class="return-label">Bridge:</span> <code>window.VtCustomDns.save(json)</code></div>
+            </div>
+          </div>
+
+          <div class="api-card">
+            <div class="api-card-header">
+              <span class="api-signature">sdk.dns.getPresets(): Record&lt;string, VTunnelCustomDnsConfig&gt;</span>
+              <div class="api-badge-group">
+                <span class="method-tag get">GET</span>
+                <button class="btn-run-api" data-play-action="dnsPresets">▶ Executar</button>
+              </div>
+            </div>
+            <div class="api-card-body">
+              <p data-i18n="moduleDns.getPresetsDesc">Retorna uma lista de presets populares e seguros prontos para uso (Cloudflare, Google, AdGuard, Quad9, CleanBrowsing).</p>
+              <div class="return-box"><span class="return-label">Bridge:</span> <code>window.VtCustomDns.getPresets()</code></div>
+            </div>
+          </div>
+
+          <div class="api-card">
+            <div class="api-card-header">
+              <span class="api-signature">sdk.dns.showDialog(): void</span>
+              <div class="api-badge-group">
+                <span class="method-tag action">ACTION</span>
+                <button class="btn-run-api" data-play-action="dnsShowDialog">▶ Executar</button>
+              </div>
+            </div>
+            <div class="api-card-body">
+              <p data-i18n="moduleDns.showDialogDesc">Abre a interface nativa do aplicativo Android para seleção e edição de DNS.</p>
+              <div class="return-box"><span class="return-label">Bridge:</span> <code>window.VtShowCustomDnsDialog.execute()</code></div>
+            </div>
+          </div>
+        </section>
+
         <!-- Módulo: sdk.android -->
         <section id="modulo-android">
           <h2 data-i18n="moduleAndroid.title">Módulo sdk.android (Hardware & Sistema Android)</h2>
@@ -983,6 +1073,21 @@ export default function App() {
                 </div>
               </div>
 
+              <!-- Custom DNS -->
+              <div class="control-group">
+                <div class="control-group-title">
+                  <span data-i18n="playground.groupDns">DNS Customizado (IPv4 / IPv6)</span>
+                  <span style="font-size:0.7rem;color:var(--accent-cyan)">sdk.dns</span>
+                </div>
+                <div class="action-buttons">
+                  <button class="btn-action" data-play-action="dnsGet">dns.get()</button>
+                  <button class="btn-action" data-play-action="dnsPresets">dns.getPresets()</button>
+                  <button class="btn-action" data-play-action="dnsToggleEnabled">dns.toggleEnabled()</button>
+                  <button class="btn-action" data-play-action="dnsSetCloudflare">dns.set(Cloudflare)</button>
+                  <button class="btn-action" data-play-action="dnsShowDialog">dns.showDialog()</button>
+                </div>
+              </div>
+
               <!-- Android & Sistema -->
               <div class="control-group">
                 <div class="control-group-title">
@@ -1084,12 +1189,12 @@ npm run build:android
       <!-- Site Footer embedded inside Main Content Container -->
       <footer class="site-footer">
         <div class="footer-links">
-          <a href="https://github.com/DTunnel0/DTunnelSDK" target="_blank" rel="noreferrer" data-i18n="footer.githubRepo">Repositório GitHub</a>
-          <a href="https://www.npmjs.com/package/dtunnel-sdk" target="_blank" rel="noreferrer" data-i18n="footer.npmPackage">Pacote npm</a>
+          <a href="https://github.com/TelksBr/VTunnelSDK" target="_blank" rel="noreferrer" data-i18n="footer.githubRepo">Repositório GitHub</a>
+          <a href="https://www.npmjs.com/package/vtunnel-sdk" target="_blank" rel="noreferrer" data-i18n="footer.npmPackage">Pacote npm</a>
           <a href="#playground" data-i18n="footer.playgroundLink">Playground</a>
           <a href="#modulo-main" data-i18n="footer.apiRefLink">Referência da API</a>
         </div>
-        <p data-i18n="footer.copyright">© 2026 Projeto DTunnel VPN. Todos os direitos reservados.</p>
+        <p data-i18n="footer.copyright">© 2026 Projeto VTunnel VPN. Todos os direitos reservados.</p>
       </footer>
     </div>
   </div>
@@ -1098,12 +1203,12 @@ npm run build:android
   <div id="toastContainer" class="toast-container"></div>
 
   <script src="./i18n.js"></script>
-  <script src="./sdk/dtunnel-sdk.js"></script>
-  <script src="./sdk/dtunnel-sdk.simulator.js"></script>
+  <script src="./sdk/vtunnel-sdk.js"></script>
+  <script src="./sdk/vtunnel-sdk.simulator.js"></script>
   <script>
-    if (typeof window.DTunnelSDK === 'undefined') {
-      document.write('<script src="../sdk/dtunnel-sdk.js"><\/script>');
-      document.write('<script src="../sdk/dtunnel-sdk.simulator.js"><\/script>');
+    if (typeof window.VTunnelSDK === 'undefined' && typeof window.DTunnelSDK === 'undefined') {
+      document.write('<script src="../sdk/vtunnel-sdk.js"><\/script>');
+      document.write('<script src="../sdk/vtunnel-sdk.simulator.js"><\/script>');
     }
   </script>
   <script src="./app.js"></script>

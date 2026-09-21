@@ -1,29 +1,47 @@
-# Chamadas Diretas da Bridge (Sem SDK)
+# 🔌 Chamadas Diretas da Bridge (Sem SDK)
 
-Use este modo apenas quando você não puder usar `dtunnel-sdk`.
+Este documento descreve como interagir diretamente com os objetos `@JavascriptInterface` injetados pelo host Android no objeto global `window`, caso você esteja desenvolvendo em um ambiente restrito onde não é possível importar o pacote `vtunnel-sdk`.
 
-## Regras
+---
 
-- Objetos nativos ficam no `window` (`window.Dt...`).
-- Métodos `execute/get/set` são síncronos.
-- Alguns retornos chegam em JSON string e precisam de parse manual.
-- Eventos chegam via callbacks globais `Dt...Event` (ou aliases legadas `dt...Listener`).
+## ⚠️ Considerações Importantes
 
-## Helpers recomendados
+1. **Sincronismo**: Todas as chamadas diretas da bridge são síncronas.
+2. **Payloads em String**: Alguns métodos retornam objetos estruturados serializados como string JSON. É responsabilidade do desenvolvedor realizar o `JSON.parse`.
+3. **Nomenclatura Dupla**: O aplicativo Android moderno injeta os objetos com prefixo `Vt...` e mantém aliases com prefixo `Dt...`. Sempre verifique a existência de ambos para compatibilidade máxima.
+
+---
+
+## 🛠️ Helpers Recomendados
+
+Para evitar quebras em navegadores que não possuam os objetos injetados, use os helpers seguros abaixo:
 
 ```js
-function dtCall(objectName, methodName, ...args) {
-  const target = window[objectName];
-  if (!target || typeof target[methodName] !== 'function') return null;
+// Chamada segura para métodos 'execute', 'get' ou 'set'
+function vtCall(objectName, methodName, ...args) {
+  // Tenta o prefixo Vt ou Dt
+  const altName = objectName.startsWith('Vt')
+    ? 'Dt' + objectName.slice(2)
+    : objectName.startsWith('Dt')
+      ? 'Vt' + objectName.slice(2)
+      : null;
+
+  const target = window[objectName] || (altName ? window[altName] : null);
+  if (!target || typeof target[methodName] !== 'function') {
+    return null;
+  }
+
   try {
     return target[methodName](...args);
-  } catch {
+  } catch (error) {
+    console.error(`Erro ao invocar ${objectName}.${methodName}:`, error);
     return null;
   }
 }
 
-function dtCallJson(objectName, methodName, ...args) {
-  const raw = dtCall(objectName, methodName, ...args);
+// Chamada segura com parsing automático de JSON
+function vtCallJson(objectName, methodName, ...args) {
+  const raw = vtCall(objectName, methodName, ...args);
   if (raw == null || typeof raw !== 'string') return raw ?? null;
   try {
     return JSON.parse(raw);
@@ -33,75 +51,99 @@ function dtCallJson(objectName, methodName, ...args) {
 }
 ```
 
-## Exemplo de chamadas
+---
 
+## 📋 Exemplos Práticos de Chamada Direta
+
+### 1. VPN e Conexão
 ```js
-// VPN
-const vpnState = dtCall('DtGetVpnState', 'execute');
-const isRunning = dtCall('DtIsVpnRunning', 'execute');
-const remainingSecs = dtCall('DtGetRemainingConnectionTime', 'execute');
-const timerText = dtCall('DtGetRemainingConnectionTimerText', 'execute');
-dtCall('DtExecuteVpnStart', 'execute');
-dtCall('DtExecuteVpnStop', 'execute');
-dtCall('DtShowDialogAdsRewarded', 'execute');
+// Iniciar e Parar
+vtCall('VtExecuteVpnStart', 'execute');
+vtCall('VtExecuteVpnStop', 'execute');
 
-// Categorias e Configurações
-const categories = dtCallJson('DtGetCategories', 'execute');
-const currentCategory = dtCallJson('DtGetSelectedCategory', 'execute');
-const configsByCategory = dtCallJson('DtGetConfigsByCategory', 'execute', 1);
-const selectedConfig = dtCallJson('DtGetSelectedConfig', 'execute');
-dtCall('DtSetConfig', 'execute', 10);
+// Consultar Estado
+const vpnState = vtCall('VtGetVpnState', 'execute');
+console.log('Status VPN:', vpnState); // 'CONNECTED', 'DISCONNECTED', etc.
 
-// Importação Offline
-const publicKey = dtCall('DtGetImportPublicKey', 'execute');
-dtCall('DtImportConfig', 'execute', encryptedPayload);
-const hasPending = dtCall('DtHasPendingConfigImport', 'execute');
-
-// Usuário e App
-const user = dtCallJson('DtGetUser', 'execute');
-const appConfig = dtCallJson('DtGetAppConfig', 'execute', 'support_url');
-
-// Sistema e Dispositivo Android
-const colors = dtCallJson('DtGetAppColors', 'execute');
-const isDark = dtCall('DtIsDarkMode', 'execute');
-dtCall('DtCopyToClipboard', 'execute', 'Texto');
-const clipboardText = dtCall('DtGetClipboardText', 'execute');
-dtCall('DtShowToast', 'execute', 'Salvo com sucesso!');
-dtCall('DtVibrate', 'execute', 50);
-const diagReport = dtCall('DtGetDiagnosticReport', 'execute');
+// Latência e Rede
+const ping = vtCall('VtGetPingResult', 'execute');
+const networkName = vtCall('VtGetNetworkName', 'execute');
 ```
 
-## Assinaturas dos callbacks globais
+### 2. Custom DNS (IPv4 / IPv6)
+```js
+// Consultar DNS ativo
+const rawDns = vtCallJson('VtCustomDns', 'get');
+console.log('DNS Config:', rawDns);
+// { enabled: true, primary: "1.1.1.1", secondary: "1.0.0.1", servers: [...] }
 
-- `DtVpnStateEvent(state: string | null): void`
-- `DtVpnStartedSuccessEvent(): void`
-- `DtVpnStoppedSuccessEvent(): void`
-- `DtNewLogEvent(): void`
-- `DtNewDefaultConfigEvent(): void`
-- `DtCheckUserStartedEvent(): void`
-- `DtCheckUserResultEvent(dataJson: string | null): void`
-- `DtCheckUserErrorEvent(message: string | null): void`
-- `DtMessageErrorEvent(dataJson: string | null): void`
-- `DtSuccessToastEvent(message: string | null): void`
-- `DtErrorToastEvent(message: string | null): void`
-- `DtNotificationEvent(dataJson: string | null): void`
-- `DtLocalIpEvent(ip: string | null): void`
-- `DtNetworkNameEvent(name: string | null): void`
-- `DtPingResultEvent(ping: string | null): void`
-- `DtCheckingAppUpdateEvent(isChecking: string | null): void`
-- `DtAirplaneStateEvent(state: string | null): void`
-- `DtHotSpotStateEvent(status: string | null): void`
-- `DtReloadRequestEvent(value: string | null): void`
+// Verificar se está habilitado
+const isDnsEnabled = vtCall('VtCustomDns', 'isEnabled');
 
-## Exemplo de eventos sem SDK
+// Alterar DNS via argumentos posicionais
+vtCall('VtCustomDns', 'set', true, '8.8.8.8', '8.8.4.4');
+
+// Ou salvar via JSON string
+vtCall('VtCustomDns', 'set', JSON.stringify({
+  enabled: true,
+  primary: '1.1.1.1',
+  secondary: '1.0.0.1'
+}));
+
+// Abrir diálogo nativo de configuração de DNS
+vtCall('VtShowCustomDnsDialog', 'execute');
+```
+
+### 3. Categorias e Servidores
+```js
+// Listar todas as categorias e servidores
+const configs = vtCallJson('VtGetConfigs', 'execute');
+
+// Selecionar servidor pelo ID
+vtCall('VtSetConfig', 'execute', 15);
+
+// Abrir diálogo nativo de seleção de servidor
+vtCall('VtExecuteDialogConfig', 'execute');
+```
+
+### 4. Sistema e Hardware
+```js
+// Insets de barra de status para CSS
+const statusBarHeight = vtCall('VtGetStatusBarHeight', 'execute') || 0;
+document.documentElement.style.setProperty('--status-bar-height', statusBarHeight + 'px');
+
+// Disparar notificação nativa
+vtCall('VtSendNotification', 'execute', 'Título', 'Mensagem do App', '');
+
+// Copiar texto para o clipboard nativo
+vtCall('VtCopyToClipboard', 'execute', 'Texto para copiar');
+
+// Toast nativo
+vtCall('VtShowToast', 'execute', 'Operação realizada com sucesso!');
+```
+
+---
+
+## 📡 Recebendo Eventos Nativos
+
+Sem o SDK, registre funções globais diretamente no `window`:
 
 ```js
-window.DtVpnStateEvent = function (state) {
-  console.log('vpnState:', state);
+// Evento de mudança de estado da VPN
+window.VtVpnStateEvent = function (state) {
+  console.log('Novo estado da VPN recebido:', state);
 };
+// Alias legado
+window.DtVpnStateEvent = window.VtVpnStateEvent;
 
-window.DtNotificationEvent = function (dataJson) {
-  const payload = dataJson ? JSON.parse(dataJson) : null;
-  console.log('notification:', payload);
+// Evento de notificação nativa
+window.VtNotificationEvent = function (jsonString) {
+  try {
+    const data = JSON.parse(jsonString);
+    console.log('Notificação recebida:', data);
+  } catch (_e) {
+    console.log('Notificação bruta:', jsonString);
+  }
 };
+window.DtNotificationEvent = window.VtNotificationEvent;
 ```
