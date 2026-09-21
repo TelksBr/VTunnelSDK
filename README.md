@@ -1,127 +1,121 @@
-# DTunnel SDK
+# VTunnel SDK
 
-SDK JavaScript/TypeScript para consumir a bridge Android (`window.Dt...`) no WebView.
+SDK JavaScript/TypeScript para consumir a bridge Android (`window.Vt...` / `window.Dt...`) no WebView do VTunnel.
 
-## Instalacao
+> **Compatibilidade**: Mantém suporte bidirecional completo tanto para a nova nomenclatura `VTunnel` / `window.Vt...` quanto para o legado `DTunnel` / `window.Dt...`.
 
-```bash
-npm install dtunnel-sdk
-```
+---
 
-## Inicializar projeto pronto
+## Recursos Principais
 
-Crie um projeto novo com template e `build:android` ja configurado:
+- 🚀 **Nova API VTunnel**: módulos `main`, `config`, `dns`, `text`, `app`, `android`.
+- 🌐 **Módulo Custom DNS (`sdk.dns`)**: gerenciamento completo de DNS customizado do cliente (IPv4/IPv6), leitura, salvamento, presets (Cloudflare, Google, Quad9, AdGuard, OpenDNS) e chamada do modal nativo (`showDialog`).
+- 🔄 **Compatibilidade Dupla**: funciona com hosts que injetam `Vt...` ou `Dt...`, alternando automaticamente.
+- 🧪 **Simulador Completo**: desenvolvimento e testes em navegadores sem necessidade do app Android real (`vtunnel-sdk/simulator`).
+- ⚛️ **React Bindings**: Provider e hooks (`useVTunnelSDK`, `useVTunnelEvent`, `useVTunnelError`, etc.).
+- 📦 **CLI Embutido**: gerador de projetos rápidos (`npx vtunnel-sdk init`).
 
-```bash
-npx dtunnel-sdk init
-```
+---
 
-Ou direto com flags:
-
-```bash
-npx dtunnel-sdk init meu-app --template react-typescript
-npx dtunnel-sdk init meu-app --template typescript --no-install
-npx dtunnel-sdk init meu-app --template cdn
-```
-
-Tambem funciona com `npm exec`:
+## Instalação
 
 ```bash
-npm exec dtunnel-sdk init meu-app --template react-typescript
+npm install vtunnel-sdk
 ```
 
-## Uso rapido
+*(Ou `npm install dtunnel-sdk` para compatibilidade com projetos legados).*
+
+---
+
+## Inicializar Projeto Pronto (CLI)
+
+Crie um projeto novo com template e `build:android` já configurado:
+
+```bash
+npx vtunnel-sdk init meu-app --template react-typescript
+```
+
+Templates disponíveis:
+- `react-typescript` (React 18 + Vite + TypeScript)
+- `typescript` (Vite + TypeScript)
+- `cdn` (Arquivo HTML único)
+
+---
+
+## Uso Rápido
 
 ```ts
-import DTunnelSDK from 'dtunnel-sdk';
+import VTunnelSDK from 'vtunnel-sdk';
 
-const sdk = new DTunnelSDK({
+const sdk = new VTunnelSDK({
   strict: false,
   autoRegisterNativeEvents: true,
 });
 
+// Status da VPN
 sdk.on('vpnState', (event) => {
-  console.log('VPN:', event.payload);
+  console.log('Estado da VPN:', event.payload);
 });
+
+// Conectar / Desconectar
+sdk.main.startVpn();
+sdk.main.stopVpn();
 ```
 
-## Simulador rapido (sem Android)
+---
+
+## Gerenciamento de Custom DNS (`sdk.dns`)
 
 ```ts
-import DTunnelSDK from 'dtunnel-sdk';
-import { installDTunnelSDKSimulator } from 'dtunnel-sdk/simulator';
+// 1. Verificar se DNS customizado está ativo
+const isEnabled = sdk.dns.isEnabled();
 
-const simulator = installDTunnelSDKSimulator();
-const sdk = new DTunnelSDK({ strict: false, autoRegisterNativeEvents: true });
+// 2. Obter configuração atual
+const currentDns = sdk.dns.get();
+console.log(currentDns);
+// { enabled: false, primary: '1.1.1.1', secondary: '1.0.0.1', servers: ['1.1.1.1', '1.0.0.1'] }
+
+// 3. Obter presets disponíveis (Cloudflare, Google, Quad9, AdGuard, OpenDNS)
+const presets = sdk.dns.getPresets();
+
+// 4. Salvar novo DNS customizado (via objeto ou argumentos)
+sdk.dns.set({
+  enabled: true,
+  primary: '8.8.8.8',
+  secondary: '8.8.4.4',
+});
+
+// Ou via argumentos posicionais:
+sdk.dns.set(true, '1.1.1.1', '1.0.0.1');
+
+// 5. Abrir diálogo nativo do Android para configuração de DNS
+sdk.dns.showDialog();
+```
+
+---
+
+## Simulador para Desenvolvimento Local
+
+```ts
+import VTunnelSDK from 'vtunnel-sdk';
+import { installVTunnelSDKSimulator } from 'vtunnel-sdk/simulator';
+
+// Instala mock completo no window (apenas fora do WebView nativo)
+const simulator = installVTunnelSDKSimulator({ autoEvents: true });
+const sdk = new VTunnelSDK();
 
 sdk.on('vpnState', (event) => {
-  console.log('VPN:', event.payload);
+  console.log('Evento VPN:', event.payload);
 });
-simulator.emit('vpnState', 'CONNECTED');
+
+sdk.main.startVpn();
 ```
 
-Browser puro (sem bundler):
+---
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/dtunnel-sdk@latest/sdk/dtunnel-sdk.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dtunnel-sdk@latest/sdk/dtunnel-sdk.simulator.js"></script>
-<script>
-  const sdk = new window.DTunnelSDK({ strict: false, autoRegisterNativeEvents: true });
-  const simulator = window.DTunnelSDKSimulator.installDTunnelSDKSimulator();
-
-  sdk.on('vpnState', (event) => {
-    console.log('VPN:', event.payload);
-  });
-  simulator.emit('vpnState', 'CONNECTED');
-</script>
-```
-
-Nota:
-- No WebView real, o simulador nao instala por padrao se detectar bridge nativa.
-
-## Documentacao completa
-
-Toda a documentacao foi movida para `docs/`:
-
-- [Indice geral](./docs/README.md)
-- [Guia rapido](./docs/getting-started.md)
-- [Referencia da API](./docs/api-reference.md)
-- [Eventos e callbacks](./docs/events.md)
-- [Chamadas diretas sem SDK](./docs/bridge-sem-sdk.md)
-
-## Fluxo oficial (limpo)
-
-Use apenas `init` para gerar projeto pronto:
-
-```bash
-npx dtunnel-sdk init meu-app --template react-typescript
-cd meu-app
-npm run build:android
-```
-
-O resultado final para Android e um arquivo unico:
-- `dist/build.html`
-
-## Demos prontas
-
-Tambem deixei demos geradas no repositorio:
-
-- `demos/cdn`
-- `demos/typescript`
-- `demos/react-typescript`
-
-Guia rapido: `demos/README.md`
-
-## Testes
+## Testes e Validação
 
 ```bash
 npm test
 npm run test:typecheck
-```
-
-## Release e publicacao
-
-```bash
-npm run release:sdk -- --version X.Y.Z
-npm run release:npm
 ```

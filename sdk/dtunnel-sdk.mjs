@@ -1,12 +1,3 @@
-import './dtunnel-sdk.js';
-
-const DTunnelSDK =
-  typeof globalThis !== 'undefined' ? globalThis.DTunnelSDK : undefined;
-
-const DTunnelBridgeError =
-  typeof globalThis !== 'undefined'
-    ? globalThis.DTunnelBridgeError
-    : undefined;
-
-export { DTunnelSDK, DTunnelBridgeError };
-export default DTunnelSDK;
+export * from './vtunnel-sdk.mjs';
+import vtunnelSdk from './vtunnel-sdk.mjs';
+export default vtunnelSdk;

@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  useDTunnelError,
-  useDTunnelEvent,
-  useDTunnelSDK,
-} from 'dtunnel-sdk/react';
+  useVTunnelError,
+  useVTunnelEvent,
+  useVTunnelSDK,
+} from 'vtunnel-sdk/react';
 import type {
-  DTunnelAction,
-  DTunnelBridgeObjectName,
-  DTunnelVPNState,
-} from 'dtunnel-sdk';
+  VTunnelAction,
+  VTunnelBridgeObjectName,
+  VTunnelVPNState,
+} from 'vtunnel-sdk';
 
 type LogItem = {
   timestamp: string;
@@ -23,14 +23,14 @@ type MetricState = {
   errors: number;
 };
 
-const REQUIRED_BRIDGE: DTunnelBridgeObjectName[] = [
-  'DtGetVpnState',
-  'DtExecuteVpnStart',
-  'DtExecuteVpnStop',
+const REQUIRED_BRIDGE: VTunnelBridgeObjectName[] = [
+  'VtGetVpnState',
+  'VtExecuteVpnStart',
+  'VtExecuteVpnStop',
 ];
 
 export function App() {
-  const sdk = useDTunnelSDK();
+  const sdk = useVTunnelSDK();
 
   const [vpnState, setVpnState] = useState<DTunnelVPNState | null>(
     sdk.main.getVpnState(),
@@ -101,21 +101,21 @@ export function App() {
     };
   }, [sdk, logs.length]);
 
-  useDTunnelEvent('vpnState', (event) => {
+  useVTunnelEvent('vpnState', (event) => {
     setVpnState(event.payload);
   });
 
-  useDTunnelEvent('nativeEvent', (event) => {
+  useVTunnelEvent('nativeEvent', (event) => {
     bumpMetric('events');
     setLastEvent(`Ultimo evento: ${event.callbackName}`);
     appendLog('EVENT', event.callbackName, event.payload);
   });
 
-  useDTunnelEvent('newDefaultConfig', () => {
+  useVTunnelEvent('newDefaultConfig', () => {
     setLastEvent('Ultimo evento: newDefaultConfig');
   });
 
-  useDTunnelError((event) => {
+  useVTunnelError((event) => {
     bumpMetric('errors');
     setLastEvent(`Ultimo erro: ${event.error.code}`);
     appendLog('SDK_ERROR', event.error.message, event.error.details);

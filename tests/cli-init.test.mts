@@ -66,7 +66,7 @@ test('cli init cria template typescript com build:android local', () => {
       'npm run build && node ./scripts/build-android-html.mjs --dist dist --out dist/build.html',
     );
     assert.equal(pkg.scripts['build:webview'], undefined);
-    assert.equal(pkg.dependencies['dtunnel-sdk'], `^${repoPkg.version}`);
+    assert.equal(pkg.dependencies['vtunnel-sdk'], `^${repoPkg.version}`);
     assert.ok(statSync(scriptPath).isFile());
     assert.ok(statSync(mainPath).isFile());
     assert.equal(existsSync(gitignorePath), true);

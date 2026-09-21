@@ -1,9 +1,9 @@
-import DTunnelSDK, {
-  type DTunnelAction,
-  type DTunnelAnySemanticEventEnvelope,
-  type DTunnelBridgeObjectName,
-  type DTunnelVPNState,
-} from 'dtunnel-sdk';
+import VTunnelSDK, {
+  type VTunnelAction,
+  type VTunnelAnySemanticEventEnvelope,
+  type VTunnelBridgeObjectName,
+  type VTunnelVPNState,
+} from 'vtunnel-sdk';
 import './style.css';
 
 type MetricName = 'calls' | 'events' | 'errors';
@@ -25,10 +25,10 @@ const inputActionValue = mustGetInputById('inputActionValue');
 const inputNotifyTitle = mustGetInputById('inputNotifyTitle');
 const inputNotifyMessage = mustGetInputById('inputNotifyMessage');
 
-const REQUIRED_BRIDGE: DTunnelBridgeObjectName[] = [
-  'DtGetVpnState',
-  'DtExecuteVpnStart',
-  'DtExecuteVpnStop',
+const REQUIRED_BRIDGE: VTunnelBridgeObjectName[] = [
+  'VtGetVpnState',
+  'VtExecuteVpnStart',
+  'VtExecuteVpnStop',
 ];
 
 const metrics: Record<MetricName, number> = {
@@ -37,7 +37,7 @@ const metrics: Record<MetricName, number> = {
   errors: 0,
 };
 
-const sdk = new DTunnelSDK({
+const sdk = new VTunnelSDK({
   strict: false,
   autoRegisterNativeEvents: true,
 });

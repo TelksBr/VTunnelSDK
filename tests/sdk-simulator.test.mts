@@ -79,7 +79,8 @@ test('installs all bridge objects and integrates with SDK calls/events', () => {
   assert.equal(
     calls.some(
       (call) =>
-        call.objectName === 'DtExecuteVpnStart' && call.methodName === 'execute',
+        (call.objectName === 'VtExecuteVpnStart' || call.objectName === 'DtExecuteVpnStart') &&
+        call.methodName === 'execute',
     ),
     true,
   );
@@ -170,7 +171,7 @@ test('simulator correctly resolves categories, import keys, colors and device me
   assert.equal(categories[0].name, 'Brasil');
 
   const importKey = (sdk as unknown as { config: { getImportPublicKey: () => string } }).config.getImportPublicKey();
-  assert.equal(importKey, 'dtunnel_pub_key_mock_123');
+  assert.equal(importKey, 'vtunnel_pub_key_mock_123');
 
   const isAds = (sdk as unknown as { main: { isAdsEnabled: () => boolean } }).main.isAdsEnabled();
   assert.equal(isAds, true);
@@ -184,3 +185,56 @@ test('simulator correctly resolves categories, import keys, colors and device me
   sdk.destroy();
   simulator.uninstall();
 });
+
+test('simulator correctly manages custom DNS module state and dialog', () => {
+  const windowRef: Record<string, unknown> = {};
+  const simulator = simulatorModule.installDTunnelSDKSimulator({
+    window: windowRef,
+    autoEvents: true,
+  });
+
+  const { VTunnelSDK } = require('../sdk/vtunnel-sdk.js');
+  const sdk = new VTunnelSDK({
+    window: windowRef,
+    strict: true,
+    autoRegisterNativeEvents: false,
+  });
+
+  // Default state: disabled
+  assert.equal(sdk.dns.isEnabled(), false);
+
+  const initialDns = sdk.dns.get();
+  assert.equal(initialDns.enabled, false);
+  assert.equal(initialDns.primary, '1.1.1.1');
+  assert.equal(initialDns.secondary, '1.0.0.1');
+
+  // Presets available
+  const presets = sdk.dns.getPresets();
+  assert.equal(Array.isArray(presets), true);
+  assert.equal(presets.length > 0, true);
+  assert.equal(presets[0].id, 'cloudflare');
+
+  // Set new DNS via object
+  sdk.dns.set({ enabled: true, primary: '8.8.8.8', secondary: '8.8.4.4' });
+  assert.equal(sdk.dns.isEnabled(), true);
+  const updatedDns = sdk.dns.get();
+  assert.equal(updatedDns.enabled, true);
+  assert.equal(updatedDns.primary, '8.8.8.8');
+  assert.equal(updatedDns.secondary, '8.8.4.4');
+
+  // Set new DNS via positional args
+  sdk.dns.set(false, '9.9.9.9', '149.112.112.112');
+  assert.equal(sdk.dns.isEnabled(), false);
+  const positionalDns = sdk.dns.get();
+  assert.equal(positionalDns.primary, '9.9.9.9');
+
+  // Show native custom DNS dialog
+  sdk.dns.showDialog();
+  const calls = simulator.getCalls();
+  const dialogCall = calls.find((c) => c.objectName === 'VtShowCustomDnsDialog' && c.methodName === 'execute');
+  assert.ok(dialogCall, 'VtShowCustomDnsDialog.execute was called');
+
+  sdk.destroy();
+  simulator.uninstall();
+});
+

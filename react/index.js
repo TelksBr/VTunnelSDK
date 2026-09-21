@@ -1,21 +1,23 @@
 'use strict';
 
 const React = require('react');
-const sdkModule = require('../sdk/dtunnel-sdk.js');
+const sdkModule = require('../sdk/vtunnel-sdk.js');
 
-const DTunnelSDK =
-  (sdkModule && (sdkModule.DTunnelSDK || sdkModule.default)) ||
-  (typeof globalThis !== 'undefined' ? globalThis.DTunnelSDK : undefined);
+const VTunnelSDK =
+  (sdkModule && (sdkModule.VTunnelSDK || sdkModule.DTunnelSDK || sdkModule.default)) ||
+  (typeof globalThis !== 'undefined' ? (globalThis.VTunnelSDK || globalThis.DTunnelSDK) : undefined);
 
-if (typeof DTunnelSDK !== 'function') {
+if (typeof VTunnelSDK !== 'function') {
   throw new Error(
-    'DTunnelSDK nao foi encontrado. Importe "dtunnel-sdk" antes de usar "dtunnel-sdk/react".',
+    'VTunnelSDK nao foi encontrado. Importe "vtunnel-sdk" antes de usar "vtunnel-sdk/react".',
   );
 }
 
-const DTunnelSDKContext = React.createContext(null);
+const DTunnelSDK = VTunnelSDK;
+const VTunnelSDKContext = React.createContext(null);
+const DTunnelSDKContext = VTunnelSDKContext;
 
-function DTunnelSDKProvider(props) {
+function VTunnelSDKProvider(props) {
   const sdk = props.sdk || null;
   const options = props.options || {};
   const children = props.children;
@@ -23,7 +25,7 @@ function DTunnelSDKProvider(props) {
   const createdSdkRef = React.useRef(null);
 
   if (!sdk && !createdSdkRef.current) {
-    createdSdkRef.current = new DTunnelSDK(options);
+    createdSdkRef.current = new VTunnelSDK(options);
   }
 
   const value = sdk || createdSdkRef.current;
@@ -41,19 +43,23 @@ function DTunnelSDKProvider(props) {
     };
   }, [sdk]);
 
-  return React.createElement(DTunnelSDKContext.Provider, { value }, children);
+  return React.createElement(VTunnelSDKContext.Provider, { value }, children);
 }
 
-function useDTunnelSDK() {
-  const sdk = React.useContext(DTunnelSDKContext);
+const DTunnelSDKProvider = VTunnelSDKProvider;
+
+function useVTunnelSDK() {
+  const sdk = React.useContext(VTunnelSDKContext);
   if (!sdk) {
-    throw new Error('useDTunnelSDK precisa estar dentro de <DTunnelSDKProvider>.');
+    throw new Error('useVTunnelSDK precisa estar dentro de <VTunnelSDKProvider>.');
   }
   return sdk;
 }
 
-function useDTunnelEvent(eventName, listener) {
-  const sdk = useDTunnelSDK();
+const useDTunnelSDK = useVTunnelSDK;
+
+function useVTunnelEvent(eventName, listener) {
+  const sdk = useVTunnelSDK();
   const listenerRef = React.useRef(listener);
 
   React.useEffect(() => {
@@ -68,15 +74,27 @@ function useDTunnelEvent(eventName, listener) {
   }, [sdk, eventName]);
 }
 
-function useDTunnelNativeEvent(listener) {
-  useDTunnelEvent('nativeEvent', listener);
+const useDTunnelEvent = useVTunnelEvent;
+
+function useVTunnelNativeEvent(listener) {
+  useVTunnelEvent('nativeEvent', listener);
 }
 
-function useDTunnelError(listener) {
-  useDTunnelEvent('error', listener);
+const useDTunnelNativeEvent = useVTunnelNativeEvent;
+
+function useVTunnelError(listener) {
+  useVTunnelEvent('error', listener);
 }
+
+const useDTunnelError = useVTunnelError;
 
 module.exports = {
+  VTunnelSDKContext,
+  VTunnelSDKProvider,
+  useVTunnelSDK,
+  useVTunnelEvent,
+  useVTunnelNativeEvent,
+  useVTunnelError,
   DTunnelSDKContext,
   DTunnelSDKProvider,
   useDTunnelSDK,

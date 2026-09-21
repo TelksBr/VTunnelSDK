@@ -1,13 +1,14 @@
 {
-  "name": "dtunnel-sdk",
-  "version": "2.0.0",
-  "description": "JavaScript/TypeScript SDK for the DTunnel Android WebView bridge.",
+  "name": "vtunnel-sdk",
+  "version": "2.1.0",
+  "description": "JavaScript/TypeScript SDK for the VTunnel Android WebView bridge.",
   "license": "MIT",
   "type": "commonjs",
-  "main": "./sdk/dtunnel-sdk.js",
-  "module": "./sdk/dtunnel-sdk.mjs",
-  "types": "./sdk/dtunnel-sdk.d.ts",
+  "main": "./sdk/vtunnel-sdk.js",
+  "module": "./sdk/vtunnel-sdk.mjs",
+  "types": "./sdk/vtunnel-sdk.d.ts",
   "bin": {
+    "vtunnel-sdk": "bin/vtunnel-sdk.mjs",
     "dtunnel-sdk": "bin/dtunnel-sdk.mjs"
   },
   "scripts": {
@@ -18,16 +19,16 @@
   },
   "exports": {
     ".": {
-      "types": "./sdk/dtunnel-sdk.d.ts",
-      "import": "./sdk/dtunnel-sdk.mjs",
-      "require": "./sdk/dtunnel-sdk.js",
-      "default": "./sdk/dtunnel-sdk.js"
+      "types": "./sdk/vtunnel-sdk.d.ts",
+      "import": "./sdk/vtunnel-sdk.mjs",
+      "require": "./sdk/vtunnel-sdk.js",
+      "default": "./sdk/vtunnel-sdk.js"
     },
     "./simulator": {
-      "types": "./sdk/dtunnel-sdk.simulator.d.ts",
-      "import": "./sdk/dtunnel-sdk.simulator.mjs",
-      "require": "./sdk/dtunnel-sdk.simulator.js",
-      "default": "./sdk/dtunnel-sdk.simulator.js"
+      "types": "./sdk/vtunnel-sdk.simulator.d.ts",
+      "import": "./sdk/vtunnel-sdk.simulator.mjs",
+      "require": "./sdk/vtunnel-sdk.simulator.js",
+      "default": "./sdk/vtunnel-sdk.simulator.js"
     },
     "./react": {
       "types": "./react/index.d.ts",
@@ -35,7 +36,14 @@
       "require": "./react/index.js",
       "default": "./react/index.js"
     },
+    "./sdk/vtunnel-sdk.js": "./sdk/vtunnel-sdk.js",
+    "./sdk/vtunnel-sdk.mjs": "./sdk/vtunnel-sdk.mjs",
+    "./sdk/vtunnel-sdk.d.ts": "./sdk/vtunnel-sdk.d.ts",
+    "./sdk/vtunnel-sdk.simulator.js": "./sdk/vtunnel-sdk.simulator.js",
+    "./sdk/vtunnel-sdk.simulator.mjs": "./sdk/vtunnel-sdk.simulator.mjs",
+    "./sdk/vtunnel-sdk.simulator.d.ts": "./sdk/vtunnel-sdk.simulator.d.ts",
     "./sdk/dtunnel-sdk.js": "./sdk/dtunnel-sdk.js",
+    "./sdk/dtunnel-sdk.mjs": "./sdk/dtunnel-sdk.mjs",
     "./sdk/dtunnel-sdk.d.ts": "./sdk/dtunnel-sdk.d.ts",
     "./sdk/dtunnel-sdk.simulator.js": "./sdk/dtunnel-sdk.simulator.js",
     "./sdk/dtunnel-sdk.simulator.mjs": "./sdk/dtunnel-sdk.simulator.mjs",
@@ -51,11 +59,15 @@
     "LICENSE"
   ],
   "keywords": [
+    "vtunnel",
+    "vtunnelsdk",
     "dtunnel",
     "sdk",
     "webview",
     "android",
     "vpn",
+    "custom-dns",
+    "dns",
     "typescript",
     "react"
   ],
@@ -77,6 +89,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DTunnel0/DTunnelSDK.git"
+    "url": "git+https://github.com/TelksBr/VTunnelSDK.git"
   }
 }
