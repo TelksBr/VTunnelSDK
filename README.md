@@ -283,7 +283,7 @@ O SDK unifica os diversos callbacks nativos do Android em eventos limpos e tipad
 | `networkName` | `VtNetworkNameEvent` / `DtNetworkNameEvent` | `string \| null` |
 | `pingResult` | `VtPingResultEvent` / `DtPingResultEvent` | `string \| null` |
 | `hotSpotState` | `VtHotSpotStateEvent` / `DtHotSpotStateEvent` | `VTunnelHotSpotStatus \| null` |
-| `airplaneState` | `VtAirplaneStateEvent` / `DtAirplaneStateEvent` | `VTunnelAirplaneState \| null` |
+| `airplaneState` | `VtAirplaneStateEvent` / `DtAirplaneStateEvent` (+ listeners) | `ACTIVE` \| `INACTIVE` \| `ACTIVATING` \| `DEACTIVATING` |
 | `error` | Disparado internamente pelo SDK em falhas de bridge | `VTunnelBridgeError` |
 
 ---

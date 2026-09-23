@@ -24,7 +24,7 @@ O VTunnel SDK unifica todos os disparos assíncronos do host Android em uma API 
 | `networkName` | `VtNetworkNameEvent(name)` / `vtNetworkNameListener(name)`<br>`DtNetworkNameEvent(name)` / `dtNetworkNameListener(name)` | `string \| null` |
 | `pingResult` | `VtPingResultEvent(ping)` / `vtPingResultListener(ping)`<br>`DtPingResultEvent(ping)` / `dtPingResultListener(ping)` | `string \| null` |
 | `checkingAppUpdate` | `VtCheckingAppUpdateEvent(bool)` / `vtCheckingAppUpdateListener(bool)`<br>`DtCheckingAppUpdateEvent(bool)` / `dtCheckingAppUpdateListener(bool)` | `boolean \| null` |
-| `airplaneState` | `VtAirplaneStateEvent(state)` / `vtAirplaneStateListener(state)`<br>`DtAirplaneStateEvent(state)` / `dtAirplaneStateListener(state)` | `VTunnelAirplaneState \| null` |
+| `airplaneState` | `VtAirplaneStateEvent(state)` / `vtAirplaneStateListener(state)`<br>`DtAirplaneStateEvent(state)` / `dtAirplaneStateListener(state)`<br>DOM (extensão VTunnel): `vt_airplane_state` / `dt_airplane_state` | `ACTIVE` \| `INACTIVE` \| `ACTIVATING` \| `DEACTIVATING` |
 | `hotSpotState` | `VtHotSpotStateEvent(status)` / `vtHotSpotStateListener(status)`<br>`DtHotSpotStateEvent(status)` / `dtHotSpotStateListener(status)` | `VTunnelHotSpotStatus \| null` |
 | `reloadRequest` | `VtReloadRequestEvent()` / `vtReloadRequestListener()`<br>`DtReloadRequestEvent()` / `dtReloadRequestListener()` | `string \| null` |
 

@@ -773,11 +773,13 @@
     registerBridgePair('VtGetLocalIP', createExecuteBridgeObject('VtGetLocalIP', () => state.localIp));
 
     registerBridgePair('VtAirplaneActivate', createExecuteBridgeObject('VtAirplaneActivate', () => {
+      if (autoEvents) emit('airplaneState', 'ACTIVATING');
       state.airplaneState = 'ACTIVE';
       if (autoEvents) emit('airplaneState', 'ACTIVE');
     }));
 
     registerBridgePair('VtAirplaneDeactivate', createExecuteBridgeObject('VtAirplaneDeactivate', () => {
+      if (autoEvents) emit('airplaneState', 'DEACTIVATING');
       state.airplaneState = 'INACTIVE';
       if (autoEvents) emit('airplaneState', 'INACTIVE');
     }));

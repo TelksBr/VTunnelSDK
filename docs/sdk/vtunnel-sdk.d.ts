@@ -270,7 +270,7 @@ export type VTunnelVPNState =
   | 'AUTH'
   | 'AUTH_FAILED';
 
-export type VTunnelAirplaneState = 'ACTIVE' | 'INACTIVE';
+export type VTunnelAirplaneState = 'ACTIVE' | 'INACTIVE' | 'ACTIVATING' | 'DEACTIVATING';
 export type VTunnelAssistantState = 'ENABLED' | 'DISABLED';
 export type VTunnelHotSpotStatus = 'RUNNING' | 'STOPPED';
 

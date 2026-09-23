@@ -86,7 +86,7 @@ Desregistra todos os listeners e limpa os callbacks globais associados a esta in
 | `getLocalIp()` | `string \| null` | `VtGetLocalIP.execute()` | Retorna o IP local atribuído à interface do dispositivo. |
 | `activateAirplaneMode()` | `void` | `VtAirplaneActivate.execute()` | Solicita ativação do modo avião (onde suportado). |
 | `deactivateAirplaneMode()` | `void` | `VtAirplaneDeactivate.execute()` | Solicita desativação do modo avião. |
-| `getAirplaneState()` | `VTunnelAirplaneState \| null` | `VtAirplaneState.execute()` | Retorna o estado atual do modo avião (`ACTIVATED`, `DEACTIVATED`). |
+| `getAirplaneState()` | `VTunnelAirplaneState \| null` | `VtAirplaneState.execute()` | Retorna o estado do modo avião: `ACTIVE`, `INACTIVE`, `ACTIVATING`, `DEACTIVATING` (1:1 com DTunnel). |
 | `getAssistantState()` | `VTunnelAssistantState \| null` | `VtAppIsCurrentAssistant.get()` | Retorna o status do app como assistente padrão do Android. |
 | `isCurrentAssistantEnabled()` | `boolean` | `VtAppIsCurrentAssistant.execute()` | Retorna `true` se o app for o assistente ativo do sistema. |
 | `showMenuDialog()` | `void` | `VtShowMenuDialog.execute()` | Abre o menu lateral nativo do aplicativo. |
