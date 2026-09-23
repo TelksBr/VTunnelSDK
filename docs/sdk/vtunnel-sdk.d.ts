@@ -12,6 +12,7 @@ export type VTunnelSemanticEventName =
   | 'showErrorToast'
   | 'notification'
   | 'localIp'
+  | 'localIpv6'
   | 'networkName'
   | 'pingResult'
   | 'checkingAppUpdate'
@@ -33,6 +34,7 @@ export type VTunnelCallbackName =
   | 'VtErrorToastEvent'
   | 'VtNotificationEvent'
   | 'VtLocalIpEvent'
+  | 'VtLocalIpv6Event'
   | 'VtNetworkNameEvent'
   | 'VtPingResultEvent'
   | 'VtCheckingAppUpdateEvent'
@@ -51,6 +53,7 @@ export type VTunnelCallbackName =
   | 'vtShowSuccessToastListener'
   | 'vtShowErrorToastListener'
   | 'vtLocalIpListener'
+  | 'vtLocalIpv6Listener'
   | 'vtNetworkNameListener'
   | 'vtPingResultListener'
   | 'vtCheckingAppUpdateListener'
@@ -70,6 +73,7 @@ export type VTunnelCallbackName =
   | 'DtErrorToastEvent'
   | 'DtNotificationEvent'
   | 'DtLocalIpEvent'
+  | 'DtLocalIpv6Event'
   | 'DtNetworkNameEvent'
   | 'DtPingResultEvent'
   | 'DtCheckingAppUpdateEvent'
@@ -88,6 +92,7 @@ export type VTunnelCallbackName =
   | 'dtShowSuccessToastListener'
   | 'dtShowErrorToastListener'
   | 'dtLocalIpListener'
+  | 'dtLocalIpv6Listener'
   | 'dtNetworkNameListener'
   | 'dtPingResultListener'
   | 'dtCheckingAppUpdateListener'
@@ -129,6 +134,8 @@ export type DTunnelBridgeObjectName =
   | 'DtStartCheckUser'
   | 'DtShowLoggerDialog'
   | 'DtGetLocalIP'
+  | 'DtGetLocalIPv6'
+  | 'DtGetLocalIPs'
   | 'DtAirplaneActivate'
   | 'DtAirplaneDeactivate'
   | 'DtAirplaneState'
@@ -211,6 +218,8 @@ export type VTOnlyBridgeObjectName =
   | 'VtStartCheckUser'
   | 'VtShowLoggerDialog'
   | 'VtGetLocalIP'
+  | 'VtGetLocalIPv6'
+  | 'VtGetLocalIPs'
   | 'VtAirplaneActivate'
   | 'VtAirplaneDeactivate'
   | 'VtAirplaneState'
@@ -420,6 +429,7 @@ export interface VTunnelEventPayloadMap {
   showErrorToast: string | null;
   notification: VTunnelParsedJson<VTunnelNotification>;
   localIp: string | null;
+  localIpv6: string | null;
   networkName: string | null;
   pingResult: string | null;
   checkingAppUpdate: boolean | string | null;
@@ -442,6 +452,7 @@ export interface VTunnelEventRawPayloadMap {
   showErrorToast: string | null;
   notification: string | null;
   localIp: string | null;
+  localIpv6: string | null;
   networkName: string | null;
   pingResult: string | null;
   checkingAppUpdate: boolean | string | null;
@@ -464,6 +475,7 @@ export interface VTunnelEventCallbackMap {
   showErrorToast: 'VtErrorToastEvent';
   notification: 'VtNotificationEvent';
   localIp: 'VtLocalIpEvent';
+  localIpv6: 'VtLocalIpv6Event';
   networkName: 'VtNetworkNameEvent';
   pingResult: 'VtPingResultEvent';
   checkingAppUpdate: 'VtCheckingAppUpdateEvent';
@@ -486,6 +498,7 @@ export interface DTunnelEventCallbackMap {
   showErrorToast: 'DtErrorToastEvent';
   notification: 'DtNotificationEvent';
   localIp: 'DtLocalIpEvent';
+  localIpv6: 'DtLocalIpv6Event';
   networkName: 'DtNetworkNameEvent';
   pingResult: 'DtPingResultEvent';
   checkingAppUpdate: 'DtCheckingAppUpdateEvent';
@@ -545,6 +558,10 @@ export interface VTunnelCallbackToEventMap {
   vtLocalIpListener: 'localIp';
   DtLocalIpEvent: 'localIp';
   dtLocalIpListener: 'localIp';
+  VtLocalIpv6Event: 'localIpv6';
+  vtLocalIpv6Listener: 'localIpv6';
+  DtLocalIpv6Event: 'localIpv6';
+  dtLocalIpv6Listener: 'localIpv6';
   VtNetworkNameEvent: 'networkName';
   vtNetworkNameListener: 'networkName';
   DtNetworkNameEvent: 'networkName';
@@ -688,6 +705,9 @@ export declare class VTunnelMainModule {
   startCheckUser(): void;
   showLoggerDialog(): void;
   getLocalIp(): string | null;
+  getLocalIpv6(): string | null;
+  /** JSON string `{"ipv4":"...","ipv6":"..."}` (`ipv6` may be null). */
+  getLocalIps(): string | null;
   activateAirplaneMode(): void;
   deactivateAirplaneMode(): void;
   getAirplaneState(): VTunnelAirplaneState | null;

@@ -36,6 +36,8 @@
     'VtStartCheckUser',
     'VtShowLoggerDialog',
     'VtGetLocalIP',
+    'VtGetLocalIPv6',
+    'VtGetLocalIPs',
     'VtAirplaneActivate',
     'VtAirplaneDeactivate',
     'VtAirplaneState',
@@ -141,6 +143,10 @@
     },
     localIp: {
       callbacks: ['VtLocalIpEvent', 'vtLocalIpListener', 'DtLocalIpEvent', 'dtLocalIpListener'],
+      parseAsJson: false,
+    },
+    localIpv6: {
+      callbacks: ['VtLocalIpv6Event', 'vtLocalIpv6Listener', 'DtLocalIpv6Event', 'dtLocalIpv6Listener'],
       parseAsJson: false,
     },
     networkName: {
@@ -581,6 +587,12 @@
     }
     getLocalIp() {
       return this.call('VtGetLocalIP', 'execute');
+    }
+    getLocalIpv6() {
+      return this.call('VtGetLocalIPv6', 'execute');
+    }
+    getLocalIps() {
+      return this.call('VtGetLocalIPs', 'execute');
     }
     activateAirplaneMode() {
       this.callVoid('VtAirplaneActivate', 'execute');

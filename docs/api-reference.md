@@ -83,7 +83,9 @@ Desregistra todos os listeners e limpa os callbacks globais associados a esta in
 | `startAppUpdate()` | `void` | `VtStartAppUpdate.execute()` | Aciona a rotina nativa de verificação e download de atualização do app. |
 | `startCheckUser()` | `void` | `VtStartCheckUser.execute()` | Dispara a verificação das credenciais e limite de conexões do usuário. |
 | `showLoggerDialog()` | `void` | `VtShowLoggerDialog.execute()` | Abre o diálogo nativo com o log de depuração da VPN. |
-| `getLocalIp()` | `string \| null` | `VtGetLocalIP.execute()` | Retorna o IP local atribuído à interface do dispositivo. |
+| `getLocalIp()` | `string \| null` | `VtGetLocalIP.execute()` | Retorna o IPv4 local da interface do dispositivo. |
+| `getLocalIpv6()` | `string \| null` | `VtGetLocalIPv6.execute()` | Retorna o IPv6 local (GUA/ULA), ou `null` se não houver. |
+| `getLocalIps()` | `string \| null` | `VtGetLocalIPs.execute()` | JSON `{"ipv4":"...","ipv6":"..."}` (`ipv6` pode ser `null`). |
 | `activateAirplaneMode()` | `void` | `VtAirplaneActivate.execute()` | Solicita ativação do modo avião (onde suportado). |
 | `deactivateAirplaneMode()` | `void` | `VtAirplaneDeactivate.execute()` | Solicita desativação do modo avião. |
 | `getAirplaneState()` | `VTunnelAirplaneState \| null` | `VtAirplaneState.execute()` | Retorna o estado do modo avião: `ACTIVE`, `INACTIVE`, `ACTIVATING`, `DEACTIVATING` (1:1 com DTunnel). |

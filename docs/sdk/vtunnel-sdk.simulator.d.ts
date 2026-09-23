@@ -37,6 +37,7 @@ export interface VTunnelSDKSimulatorState {
   airplaneState: VTunnelAirplaneState;
   assistantState: VTunnelAssistantState;
   localIp: string | null;
+  localIpv6: string | null;
   networkName: string | null;
   pingResult: string | null;
   adsEnabled: boolean;

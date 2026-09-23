@@ -21,6 +21,7 @@ O VTunnel SDK unifica todos os disparos assíncronos do host Android em uma API 
 | `showErrorToast` | `VtErrorToastEvent(msg)` / `vtShowErrorToastListener(msg)`<br>`DtErrorToastEvent(msg)` / `dtShowErrorToastListener(msg)` | `string \| null` |
 | `notification` | `VtNotificationEvent(json)`<br>`DtNotificationEvent(json)` | `VTunnelNotification \| null` |
 | `localIp` | `VtLocalIpEvent(ip)` / `vtLocalIpListener(ip)`<br>`DtLocalIpEvent(ip)` / `dtLocalIpListener(ip)` | `string \| null` |
+| `localIpv6` | `VtLocalIpv6Event(ip)` / `vtLocalIpv6Listener(ip)`<br>`DtLocalIpv6Event(ip)` / `dtLocalIpv6Listener(ip)` | `string \| null` |
 | `networkName` | `VtNetworkNameEvent(name)` / `vtNetworkNameListener(name)`<br>`DtNetworkNameEvent(name)` / `dtNetworkNameListener(name)` | `string \| null` |
 | `pingResult` | `VtPingResultEvent(ping)` / `vtPingResultListener(ping)`<br>`DtPingResultEvent(ping)` / `dtPingResultListener(ping)` | `string \| null` |
 | `checkingAppUpdate` | `VtCheckingAppUpdateEvent(bool)` / `vtCheckingAppUpdateListener(bool)`<br>`DtCheckingAppUpdateEvent(bool)` / `dtCheckingAppUpdateListener(bool)` | `boolean \| null` |

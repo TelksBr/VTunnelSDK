@@ -38,6 +38,8 @@
     'VtStartCheckUser',
     'VtShowLoggerDialog',
     'VtGetLocalIP',
+    'VtGetLocalIPv6',
+    'VtGetLocalIPs',
     'VtAirplaneActivate',
     'VtAirplaneDeactivate',
     'VtAirplaneState',
@@ -109,6 +111,7 @@
     'VtErrorToastEvent',
     'VtNotificationEvent',
     'VtLocalIpEvent',
+    'VtLocalIpv6Event',
     'VtNetworkNameEvent',
     'VtPingResultEvent',
     'VtCheckingAppUpdateEvent',
@@ -127,6 +130,7 @@
     'vtShowSuccessToastListener',
     'vtShowErrorToastListener',
     'vtLocalIpListener',
+    'vtLocalIpv6Listener',
     'vtNetworkNameListener',
     'vtPingResultListener',
     'vtCheckingAppUpdateListener',
@@ -146,6 +150,7 @@
     'DtErrorToastEvent',
     'DtNotificationEvent',
     'DtLocalIpEvent',
+    'DtLocalIpv6Event',
     'DtNetworkNameEvent',
     'DtPingResultEvent',
     'DtCheckingAppUpdateEvent',
@@ -164,6 +169,7 @@
     'dtShowSuccessToastListener',
     'dtShowErrorToastListener',
     'dtLocalIpListener',
+    'dtLocalIpv6Listener',
     'dtNetworkNameListener',
     'dtPingResultListener',
     'dtCheckingAppUpdateListener',
@@ -186,6 +192,7 @@
     showErrorToast: 'VtErrorToastEvent',
     notification: 'VtNotificationEvent',
     localIp: 'VtLocalIpEvent',
+    localIpv6: 'VtLocalIpv6Event',
     networkName: 'VtNetworkNameEvent',
     pingResult: 'VtPingResultEvent',
     checkingAppUpdate: 'VtCheckingAppUpdateEvent',
@@ -333,6 +340,7 @@
       airplaneState: 'INACTIVE',
       assistantState: 'ENABLED',
       localIp: '192.168.0.2',
+      localIpv6: 'fd12:3456:789a::1',
       networkName: 'vtunnel-Wifi',
       pingResult: '42ms',
       adsEnabled: true,
@@ -771,6 +779,13 @@
     }));
 
     registerBridgePair('VtGetLocalIP', createExecuteBridgeObject('VtGetLocalIP', () => state.localIp));
+    registerBridgePair('VtGetLocalIPv6', createExecuteBridgeObject('VtGetLocalIPv6', () => state.localIpv6));
+    registerBridgePair(
+      'VtGetLocalIPs',
+      createExecuteBridgeObject('VtGetLocalIPs', () =>
+        JSON.stringify({ ipv4: state.localIp, ipv6: state.localIpv6 }),
+      ),
+    );
 
     registerBridgePair('VtAirplaneActivate', createExecuteBridgeObject('VtAirplaneActivate', () => {
       if (autoEvents) emit('airplaneState', 'ACTIVATING');
