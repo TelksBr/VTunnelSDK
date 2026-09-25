@@ -296,8 +296,11 @@ export interface VTunnelHotSpotInfo {
   ip: string;
   httpPort: number;
   socksPort: number;
+  socksUdpPort?: number;
+  udpSupported?: boolean;
   httpProxy: string;
   socksProxy: string;
+  socksUdpProxy?: string;
   pacUrl: string;
   helpUrl: string;
 }

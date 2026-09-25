@@ -47,7 +47,7 @@ Inscreve um ouvinte para eventos semânticos, eventos nativos ou erros.
   });
   // Hotspot proxy endpoints for layout:
   sdk.on('hotSpotInfo', (event) => {
-    const info = event.payload; // { ip, httpPort, socksPort, pacUrl, httpProxy, socksProxy, ... }
+    const info = event.payload; // { ip, httpPort, socksPort, socksUdpPort, udpSupported, pacUrl, helpUrl, ... }
   });
   // Para remover o listener:
   unsubscribe();
@@ -218,7 +218,7 @@ O módulo `sdk.dns` expõe o controle de DNS customizado do cliente, integrando 
 | `startHotSpotService(port?: number)` | `void` | `VtStartHotSpotService.execute(port)` | Inicia o proxy HotSpot (HTTP + SOCKS + PAC). VPN precisa estar conectado. |
 | `stopHotSpotService()` | `void` | `VtStopHotSpotService.execute()` | Para o serviço de HotSpot. |
 | `getHotSpotStatus()` | `VTunnelHotSpotStatus \| null` | `VtGetStatusHotSpotService.execute()` | Status simples (`RUNNING`, `STOPPED`, …). |
-| `getHotSpotInfo()` | `VTunnelHotSpotInfo \| null` | `VtGetHotSpotInfo.execute()` | IP, portas HTTP/SOCKS, PAC e URLs para exibir no layout. |
+| `getHotSpotInfo()` | `VTunnelHotSpotInfo \| null` | `VtGetHotSpotInfo.execute()` | IP, portas HTTP/SOCKS/UDP, PAC, `helpUrl` e flags `udpSupported` para o layout. |
 | `isHotSpotRunning()` | `boolean` | `sdk.android.getHotSpotStatus() === 'RUNNING'` | Atalho para verificar se o proxy de hotspot está ativo. |
 | `getNetworkDownloadBytes()` | `number \| null` | `VtGetNetworkDownloadBytes.execute()` | Total de bytes baixados na sessão atual. |
 | `getNetworkUploadBytes()` | `number \| null` | `VtGetNetworkUploadBytes.execute()` | Total de bytes enviados na sessão atual. |

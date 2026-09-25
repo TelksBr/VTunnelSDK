@@ -413,8 +413,11 @@
         ip: '192.168.43.1',
         httpPort: 8578,
         socksPort: 8579,
+        socksUdpPort: 8580,
+        udpSupported: false,
         httpProxy: '192.168.43.1:8578',
         socksProxy: '192.168.43.1:8579',
+        socksUdpProxy: '192.168.43.1:8580',
         pacUrl: 'http://192.168.43.1:8578/proxy.pac',
         helpUrl: 'http://192.168.43.1:8578/',
       },
@@ -886,6 +889,7 @@
     registerBridgePair('VtStartHotSpotService', createExecuteBridgeObject('VtStartHotSpotService', (port) => {
       const httpPort = toInteger(port, 8578);
       const socksPort = httpPort === 8578 ? 8579 : httpPort + 1;
+      const socksUdpPort = httpPort === 8578 ? 8580 : httpPort + 2;
       const ip = '192.168.43.1';
       state.hotSpotStatus = 'RUNNING';
       state.hotSpotPort = httpPort;
@@ -895,8 +899,11 @@
         ip,
         httpPort,
         socksPort,
+        socksUdpPort,
+        udpSupported: true,
         httpProxy: `${ip}:${httpPort}`,
         socksProxy: `${ip}:${socksPort}`,
+        socksUdpProxy: `${ip}:${socksUdpPort}`,
         pacUrl: `http://${ip}:${httpPort}/proxy.pac`,
         helpUrl: `http://${ip}:${httpPort}/`,
       };
