@@ -45,6 +45,10 @@ Inscreve um ouvinte para eventos semânticos, eventos nativos ou erros.
   const unsubscribe = sdk.on('vpnState', (event) => {
     console.log('Novo estado da VPN:', event.payload);
   });
+  // Hotspot proxy endpoints for layout:
+  sdk.on('hotSpotInfo', (event) => {
+    const info = event.payload; // { ip, httpPort, socksPort, pacUrl, httpProxy, socksProxy, ... }
+  });
   // Para remover o listener:
   unsubscribe();
   ```
@@ -84,7 +88,7 @@ Desregistra todos os listeners e limpa os callbacks globais associados a esta in
 | `startCheckUser()` | `void` | `VtStartCheckUser.execute()` | Dispara a verificação das credenciais e limite de conexões do usuário. |
 | `showLoggerDialog()` | `void` | `VtShowLoggerDialog.execute()` | Abre o diálogo nativo com o log de depuração da VPN. |
 | `getLocalIp()` | `string \| null` | `VtGetLocalIP.execute()` | Retorna o IPv4 local da interface do dispositivo. |
-| `getLocalIpv6()` | `string \| null` | `VtGetLocalIPv6.execute()` | Retorna o IPv6 local (GUA/ULA), ou `null` se não houver. |
+| `getLocalIpv6()` | `string \| null` | `VtGetLocalIPv6.execute()` | IPv6 **local** (ULA `fd00::`/`fc00::`, senão link-local `fe80::`). Não retorna GUA público (ex. `2804:`). `null` se só houver global. |
 | `getLocalIps()` | `string \| null` | `VtGetLocalIPs.execute()` | JSON `{"ipv4":"...","ipv6":"..."}` (`ipv6` pode ser `null`). |
 | `activateAirplaneMode()` | `void` | `VtAirplaneActivate.execute()` | Solicita ativação do modo avião (onde suportado). |
 | `deactivateAirplaneMode()` | `void` | `VtAirplaneDeactivate.execute()` | Solicita desativação do modo avião. |
@@ -211,9 +215,10 @@ O módulo `sdk.dns` expõe o controle de DNS customizado do cliente, integrando 
 | `getStatusBarHeight()` | `number \| null` | `VtGetStatusBarHeight.execute()` | Retorna a altura da barra de status em pixels para cálculo de insets seguros. |
 | `getNavigationBarHeight()` | `number \| null` | `VtGetNavigationBarHeight.execute()` | Retorna a altura da barra de navegação virtual em pixels. |
 | `openExternalUrl(url: string)` | `void` | `VtOpenExternalUrl.execute(url)` | Abre uma URL no navegador padrão do dispositivo fora do WebView. |
-| `startHotSpotService(port?: number)` | `void` | `VtStartHotSpotService.execute(port)` | Inicia o serviço proxy de compartilhamento de conexão (HotSpot). |
+| `startHotSpotService(port?: number)` | `void` | `VtStartHotSpotService.execute(port)` | Inicia o proxy HotSpot (HTTP + SOCKS + PAC). VPN precisa estar conectado. |
 | `stopHotSpotService()` | `void` | `VtStopHotSpotService.execute()` | Para o serviço de HotSpot. |
-| `getHotSpotStatus()` | `VTunnelHotSpotStatus \| null` | `VtGetStatusHotSpotService.execute()` | Consulta o status do HotSpot (`RUNNING`, `STOPPED`). |
+| `getHotSpotStatus()` | `VTunnelHotSpotStatus \| null` | `VtGetStatusHotSpotService.execute()` | Status simples (`RUNNING`, `STOPPED`, …). |
+| `getHotSpotInfo()` | `VTunnelHotSpotInfo \| null` | `VtGetHotSpotInfo.execute()` | IP, portas HTTP/SOCKS, PAC e URLs para exibir no layout. |
 | `isHotSpotRunning()` | `boolean` | `sdk.android.getHotSpotStatus() === 'RUNNING'` | Atalho para verificar se o proxy de hotspot está ativo. |
 | `getNetworkDownloadBytes()` | `number \| null` | `VtGetNetworkDownloadBytes.execute()` | Total de bytes baixados na sessão atual. |
 | `getNetworkUploadBytes()` | `number \| null` | `VtGetNetworkUploadBytes.execute()` | Total de bytes enviados na sessão atual. |
@@ -241,7 +246,7 @@ O módulo `sdk.dns` expõe o controle de DNS customizado do cliente, integrando 
 | `getAppConfig<T>(name: string)` | `VTunnelAppConfigValue<T> \| null` | `VtGetAppConfig.execute(name)` | Lê uma chave arbitrária do arquivo de configuração do aplicativo. |
 | `ignoreBatteryOptimizations()` | `void` | `VtIgnoreBatteryOptimizations.execute()` | Abre a tela nativa para solicitar isenção de economia de bateria. |
 | `startApnActivity()` | `void` | `VtStartApnActivity.execute()` | Abre a tela nativa de configurações de APN do Android. |
-| `startNetworkActivity()` | `void` | `VtStartNetworkActivity.execute()` | Abre as configurações de redes móveis do sistema. |
+| `startNetworkActivity()` | `void` | `VtStartNetworkActivity.execute()` | Abre `android.settings.DATA_ROAMING_SETTINGS` (configuração de rede/roaming — igual DTunnel). |
 | `startWebViewActivity(url?: string)` | `void` | `VtStartWebViewActivity.execute(url)` | Abre uma nova tela nativa de WebView com a URL fornecida. |
 | `startRadioInfoActivity()` | `void` | `VtStartRadioInfoActivity.execute()` | Abre a tela de informações de rádio do Android (*#*#4636#*#*). |
 

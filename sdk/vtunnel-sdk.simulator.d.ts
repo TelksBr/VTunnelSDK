@@ -10,6 +10,7 @@ import type {
   VTunnelCheckUserResult,
   VTunnelDefaultConfig,
   VTunnelHotSpotStatus,
+  VTunnelHotSpotInfo,
   VTunnelMessage,
   VTunnelNetworkData,
   VTunnelNotification,
@@ -62,6 +63,7 @@ export interface VTunnelSDKSimulatorState {
   navigationBarHeight: number;
   hotSpotStatus: VTunnelHotSpotStatus;
   hotSpotPort: number | null;
+  hotSpotInfo: VTunnelHotSpotInfo;
   networkDownloadBytes: number;
   networkUploadBytes: number;
   appVersion: string;

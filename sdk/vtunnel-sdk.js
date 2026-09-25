@@ -68,6 +68,7 @@
     'VtStartHotSpotService',
     'VtStopHotSpotService',
     'VtGetStatusHotSpotService',
+    'VtGetHotSpotInfo',
     'VtGetNetworkDownloadBytes',
     'VtGetNetworkUploadBytes',
     'VtAppVersion',
@@ -168,6 +169,10 @@
     hotSpotState: {
       callbacks: ['VtHotSpotStateEvent', 'vtHotSpotStateListener', 'DtHotSpotStateEvent', 'dtHotSpotStateListener'],
       parseAsJson: false,
+    },
+    hotSpotInfo: {
+      callbacks: ['VtHotSpotInfoEvent', 'vtHotSpotInfoListener', 'DtHotSpotInfoEvent', 'dtHotSpotInfoListener'],
+      parseAsJson: true,
     },
     reloadRequest: {
       callbacks: ['VtReloadRequestEvent', 'vtReloadRequestListener', 'DtReloadRequestEvent', 'dtReloadRequestListener'],
@@ -707,6 +712,9 @@
     }
     getHotSpotStatus() {
       return this.call('VtGetStatusHotSpotService', 'execute');
+    }
+    getHotSpotInfo() {
+      return this.callJson('VtGetHotSpotInfo', 'execute');
     }
     isHotSpotRunning() {
       return this.getHotSpotStatus() === 'RUNNING';

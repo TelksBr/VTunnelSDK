@@ -18,6 +18,7 @@ export type VTunnelSemanticEventName =
   | 'checkingAppUpdate'
   | 'airplaneState'
   | 'hotSpotState'
+  | 'hotSpotInfo'
   | 'reloadRequest';
 
 export type VTunnelCallbackName =
@@ -40,6 +41,7 @@ export type VTunnelCallbackName =
   | 'VtCheckingAppUpdateEvent'
   | 'VtAirplaneStateEvent'
   | 'VtHotSpotStateEvent'
+  | 'VtHotSpotInfoEvent'
   | 'VtReloadRequestEvent'
   | 'vtVpnStateListener'
   | 'vtVpnStartedSuccessListener'
@@ -59,6 +61,7 @@ export type VTunnelCallbackName =
   | 'vtCheckingAppUpdateListener'
   | 'vtAirplaneStateListener'
   | 'vtHotSpotStateListener'
+  | 'vtHotSpotInfoListener'
   | 'vtReloadRequestListener'
   | 'DtVpnStateEvent'
   | 'DtVpnStartedSuccessEvent'
@@ -79,6 +82,7 @@ export type VTunnelCallbackName =
   | 'DtCheckingAppUpdateEvent'
   | 'DtAirplaneStateEvent'
   | 'DtHotSpotStateEvent'
+  | 'DtHotSpotInfoEvent'
   | 'DtReloadRequestEvent'
   | 'dtVpnStateListener'
   | 'dtVpnStartedSuccessListener'
@@ -98,6 +102,7 @@ export type VTunnelCallbackName =
   | 'dtCheckingAppUpdateListener'
   | 'dtAirplaneStateListener'
   | 'dtHotSpotStateListener'
+  | 'dtHotSpotInfoListener'
   | 'dtReloadRequestListener';
 
 export type DTunnelBridgeObjectName =
@@ -167,6 +172,7 @@ export type DTunnelBridgeObjectName =
   | 'DtStartHotSpotService'
   | 'DtStopHotSpotService'
   | 'DtGetStatusHotSpotService'
+  | 'DtGetHotSpotInfo'
   | 'DtGetNetworkDownloadBytes'
   | 'DtGetNetworkUploadBytes'
   | 'DtAppVersion'
@@ -251,6 +257,7 @@ export type VTOnlyBridgeObjectName =
   | 'VtStartHotSpotService'
   | 'VtStopHotSpotService'
   | 'VtGetStatusHotSpotService'
+  | 'VtGetHotSpotInfo'
   | 'VtGetNetworkDownloadBytes'
   | 'VtGetNetworkUploadBytes'
   | 'VtAppVersion'
@@ -281,7 +288,19 @@ export type VTunnelVPNState =
 
 export type VTunnelAirplaneState = 'ACTIVE' | 'INACTIVE' | 'ACTIVATING' | 'DEACTIVATING';
 export type VTunnelAssistantState = 'ENABLED' | 'DISABLED';
-export type VTunnelHotSpotStatus = 'RUNNING' | 'STOPPED';
+export type VTunnelHotSpotStatus = 'RUNNING' | 'STOPPED' | 'STARTING' | 'STOPPING';
+
+export interface VTunnelHotSpotInfo {
+  state: VTunnelHotSpotStatus | string;
+  running: boolean;
+  ip: string;
+  httpPort: number;
+  socksPort: number;
+  httpProxy: string;
+  socksProxy: string;
+  pacUrl: string;
+  helpUrl: string;
+}
 
 export type VTunnelAction =
   | 'CDN_UPDATE'
@@ -435,6 +454,7 @@ export interface VTunnelEventPayloadMap {
   checkingAppUpdate: boolean | string | null;
   airplaneState: VTunnelAirplaneState | string | null;
   hotSpotState: VTunnelHotSpotStatus | string | null;
+  hotSpotInfo: VTunnelParsedJson<VTunnelHotSpotInfo>;
   reloadRequest: string | null;
 }
 
@@ -458,6 +478,7 @@ export interface VTunnelEventRawPayloadMap {
   checkingAppUpdate: boolean | string | null;
   airplaneState: string | null;
   hotSpotState: string | null;
+  hotSpotInfo: string | null;
   reloadRequest: string | null;
 }
 
@@ -481,6 +502,7 @@ export interface VTunnelEventCallbackMap {
   checkingAppUpdate: 'VtCheckingAppUpdateEvent';
   airplaneState: 'VtAirplaneStateEvent';
   hotSpotState: 'VtHotSpotStateEvent';
+  hotSpotInfo: 'VtHotSpotInfoEvent';
   reloadRequest: 'VtReloadRequestEvent';
 }
 
@@ -504,6 +526,7 @@ export interface DTunnelEventCallbackMap {
   checkingAppUpdate: 'DtCheckingAppUpdateEvent';
   airplaneState: 'DtAirplaneStateEvent';
   hotSpotState: 'DtHotSpotStateEvent';
+  hotSpotInfo: 'DtHotSpotInfoEvent';
   reloadRequest: 'DtReloadRequestEvent';
 }
 
@@ -582,6 +605,10 @@ export interface VTunnelCallbackToEventMap {
   vtHotSpotStateListener: 'hotSpotState';
   DtHotSpotStateEvent: 'hotSpotState';
   dtHotSpotStateListener: 'hotSpotState';
+  VtHotSpotInfoEvent: 'hotSpotInfo';
+  vtHotSpotInfoListener: 'hotSpotInfo';
+  DtHotSpotInfoEvent: 'hotSpotInfo';
+  dtHotSpotInfoListener: 'hotSpotInfo';
   VtReloadRequestEvent: 'reloadRequest';
   vtReloadRequestListener: 'reloadRequest';
   DtReloadRequestEvent: 'reloadRequest';
@@ -752,6 +779,7 @@ export declare class VTunnelAndroidModule {
   startHotSpotService(port?: number): void;
   stopHotSpotService(): void;
   getHotSpotStatus(): VTunnelHotSpotStatus | null;
+  getHotSpotInfo(): VTunnelHotSpotInfo | null;
   isHotSpotRunning(): boolean;
   getNetworkDownloadBytes(): number | null;
   getNetworkUploadBytes(): number | null;
@@ -894,6 +922,7 @@ export type DTunnelVPNState = VTunnelVPNState;
 export type DTunnelAirplaneState = VTunnelAirplaneState;
 export type DTunnelAssistantState = VTunnelAssistantState;
 export type DTunnelHotSpotStatus = VTunnelHotSpotStatus;
+export type DTunnelHotSpotInfo = VTunnelHotSpotInfo;
 export type DTunnelAction = VTunnelAction;
 export type DTunnelNotification = VTunnelNotification;
 export type DTunnelMessage = VTunnelMessage;

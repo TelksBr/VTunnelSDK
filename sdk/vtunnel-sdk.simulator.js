@@ -71,6 +71,7 @@
     'VtStartHotSpotService',
     'VtStopHotSpotService',
     'VtGetStatusHotSpotService',
+    'VtGetHotSpotInfo',
     'VtGetNetworkDownloadBytes',
     'VtGetNetworkUploadBytes',
     'VtAppVersion',
@@ -117,6 +118,7 @@
     'VtCheckingAppUpdateEvent',
     'VtAirplaneStateEvent',
     'VtHotSpotStateEvent',
+    'VtHotSpotInfoEvent',
     'VtReloadRequestEvent',
     'vtVpnStateListener',
     'vtVpnStartedSuccessListener',
@@ -136,6 +138,7 @@
     'vtCheckingAppUpdateListener',
     'vtAirplaneStateListener',
     'vtHotSpotStateListener',
+    'vtHotSpotInfoListener',
     'vtReloadRequestListener',
     'DtVpnStateEvent',
     'DtVpnStartedSuccessEvent',
@@ -156,6 +159,7 @@
     'DtCheckingAppUpdateEvent',
     'DtAirplaneStateEvent',
     'DtHotSpotStateEvent',
+    'DtHotSpotInfoEvent',
     'DtReloadRequestEvent',
     'dtVpnStateListener',
     'dtVpnStartedSuccessListener',
@@ -175,6 +179,7 @@
     'dtCheckingAppUpdateListener',
     'dtAirplaneStateListener',
     'dtHotSpotStateListener',
+    'dtHotSpotInfoListener',
     'dtReloadRequestListener',
   ]);
 
@@ -198,6 +203,7 @@
     checkingAppUpdate: 'VtCheckingAppUpdateEvent',
     airplaneState: 'VtAirplaneStateEvent',
     hotSpotState: 'VtHotSpotStateEvent',
+    hotSpotInfo: 'VtHotSpotInfoEvent',
     reloadRequest: 'VtReloadRequestEvent',
   });
 
@@ -401,6 +407,17 @@
       navigationBarHeight: 0,
       hotSpotStatus: 'STOPPED',
       hotSpotPort: null,
+      hotSpotInfo: {
+        state: 'STOPPED',
+        running: false,
+        ip: '192.168.43.1',
+        httpPort: 8578,
+        socksPort: 8579,
+        httpProxy: '192.168.43.1:8578',
+        socksProxy: '192.168.43.1:8579',
+        pacUrl: 'http://192.168.43.1:8578/proxy.pac',
+        helpUrl: 'http://192.168.43.1:8578/',
+      },
       networkDownloadBytes: 0,
       networkUploadBytes: 0,
       appVersion: 'vtunnel-1.0.0',
@@ -867,17 +884,41 @@
     }));
 
     registerBridgePair('VtStartHotSpotService', createExecuteBridgeObject('VtStartHotSpotService', (port) => {
+      const httpPort = toInteger(port, 8578);
+      const socksPort = httpPort === 8578 ? 8579 : httpPort + 1;
+      const ip = '192.168.43.1';
       state.hotSpotStatus = 'RUNNING';
-      state.hotSpotPort = toInteger(port, 8080);
-      if (autoEvents) emit('hotSpotState', 'RUNNING');
+      state.hotSpotPort = httpPort;
+      state.hotSpotInfo = {
+        state: 'RUNNING',
+        running: true,
+        ip,
+        httpPort,
+        socksPort,
+        httpProxy: `${ip}:${httpPort}`,
+        socksProxy: `${ip}:${socksPort}`,
+        pacUrl: `http://${ip}:${httpPort}/proxy.pac`,
+        helpUrl: `http://${ip}:${httpPort}/`,
+      };
+      if (autoEvents) {
+        emit('hotSpotState', 'RUNNING');
+        emit('hotSpotInfo', state.hotSpotInfo);
+      }
     }));
 
     registerBridgePair('VtStopHotSpotService', createExecuteBridgeObject('VtStopHotSpotService', () => {
       state.hotSpotStatus = 'STOPPED';
-      if (autoEvents) emit('hotSpotState', 'STOPPED');
+      if (state.hotSpotInfo) {
+        state.hotSpotInfo = { ...state.hotSpotInfo, state: 'STOPPED', running: false };
+      }
+      if (autoEvents) {
+        emit('hotSpotState', 'STOPPED');
+        emit('hotSpotInfo', state.hotSpotInfo);
+      }
     }));
 
     registerBridgePair('VtGetStatusHotSpotService', createExecuteBridgeObject('VtGetStatusHotSpotService', () => state.hotSpotStatus));
+    registerBridgePair('VtGetHotSpotInfo', createExecuteBridgeObject('VtGetHotSpotInfo', () => JSON.stringify(state.hotSpotInfo || {})));
     registerBridgePair('VtGetNetworkDownloadBytes', createExecuteBridgeObject('VtGetNetworkDownloadBytes', () => state.networkDownloadBytes));
     registerBridgePair('VtGetNetworkUploadBytes', createExecuteBridgeObject('VtGetNetworkUploadBytes', () => state.networkUploadBytes));
     registerBridgePair('VtAppVersion', createExecuteBridgeObject('VtAppVersion', () => state.appVersion));
