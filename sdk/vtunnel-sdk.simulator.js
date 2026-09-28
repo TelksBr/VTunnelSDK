@@ -88,6 +88,7 @@
     'VtIsSafeMode',
     'VtCustomDns',
     'VtShowCustomDnsDialog',
+    'VtPlayUpdate',
   ]);
 
   const DT_BRIDGE_OBJECT_NAMES = Object.freeze(
@@ -120,6 +121,7 @@
     'VtHotSpotStateEvent',
     'VtHotSpotInfoEvent',
     'VtReloadRequestEvent',
+    'VtPlayUpdateStateEvent',
     'vtVpnStateListener',
     'vtVpnStartedSuccessListener',
     'vtVpnStoppedSuccessListener',
@@ -140,6 +142,7 @@
     'vtHotSpotStateListener',
     'vtHotSpotInfoListener',
     'vtReloadRequestListener',
+    'vtPlayUpdateStateListener',
     'DtVpnStateEvent',
     'DtVpnStartedSuccessEvent',
     'DtVpnStoppedSuccessEvent',
@@ -161,6 +164,7 @@
     'DtHotSpotStateEvent',
     'DtHotSpotInfoEvent',
     'DtReloadRequestEvent',
+    'DtPlayUpdateStateEvent',
     'dtVpnStateListener',
     'dtVpnStartedSuccessListener',
     'dtVpnStoppedSuccessListener',
@@ -181,6 +185,7 @@
     'dtHotSpotStateListener',
     'dtHotSpotInfoListener',
     'dtReloadRequestListener',
+    'dtPlayUpdateStateListener',
   ]);
 
   const SEMANTIC_EVENT_TO_CALLBACK = Object.freeze({
@@ -205,12 +210,14 @@
     hotSpotState: 'VtHotSpotStateEvent',
     hotSpotInfo: 'VtHotSpotInfoEvent',
     reloadRequest: 'VtReloadRequestEvent',
+    playUpdateState: 'VtPlayUpdateStateEvent',
   });
 
   const JSON_EVENT_NAMES = Object.freeze([
     'checkUserResult',
     'messageError',
     'notification',
+    'playUpdateState',
   ]);
 
   function isPlainObject(value) {
@@ -443,6 +450,17 @@
         { id: 'opendns', name: 'OpenDNS', primary: '208.67.222.222', secondary: '208.67.220.220' },
       ],
       lastCustomDnsDialogShown: false,
+      playUpdate: {
+        status: 'none',
+        mode: 'OFF',
+        nativePrompt: true,
+        availableVersionCode: 0,
+        stalenessDays: -1,
+        flexibleAllowed: false,
+        immediateAllowed: false,
+        bytesDownloaded: 0,
+        totalBytesToDownload: 0,
+      },
     };
   }
 
@@ -1029,6 +1047,48 @@
 
     registerBridgePair('VtCustomDns', customDnsObject);
     registerBridgePair('VtShowCustomDnsDialog', showCustomDnsDialogObject);
+
+    // Play In-App Update Simulator: available -> downloading -> downloaded -> installed
+    function setPlayUpdate(patch) {
+      state.playUpdate = { ...state.playUpdate, ...patch };
+      if (autoEvents) emit('playUpdateState', state.playUpdate);
+    }
+
+    const playUpdateObject = {
+      getState: function getState() {
+        return runCall('VtPlayUpdate', 'getState', [], () => toJsonStringOrNull(state.playUpdate));
+      },
+      execute: function execute() {
+        return runCall('VtPlayUpdate', 'execute', [], () => toJsonStringOrNull(state.playUpdate));
+      },
+      check: function check() {
+        return runCall('VtPlayUpdate', 'check', [], () => {
+          if (autoEvents) emit('playUpdateState', state.playUpdate);
+        });
+      },
+      start: function start(type) {
+        return runCall('VtPlayUpdate', 'start', [type], () => {
+          if (state.playUpdate.status !== 'available') return;
+          const total = state.playUpdate.totalBytesToDownload || 10 * 1024 * 1024;
+          if (type === 'IMMEDIATE') {
+            setPlayUpdate({ status: 'installing', bytesDownloaded: total, totalBytesToDownload: total });
+            setPlayUpdate({ status: 'installed' });
+            return;
+          }
+          setPlayUpdate({ status: 'downloading', bytesDownloaded: 0, totalBytesToDownload: total });
+          setPlayUpdate({ status: 'downloaded', bytesDownloaded: total });
+        });
+      },
+      complete: function complete() {
+        return runCall('VtPlayUpdate', 'complete', [], () => {
+          if (state.playUpdate.status !== 'downloaded') return;
+          setPlayUpdate({ status: 'installing' });
+          setPlayUpdate({ status: 'installed' });
+        });
+      },
+    };
+
+    registerBridgePair('VtPlayUpdate', playUpdateObject);
 
     function install() {
       if (installed) return controller;

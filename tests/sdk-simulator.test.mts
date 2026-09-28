@@ -238,3 +238,40 @@ test('simulator correctly manages custom DNS module state and dialog', () => {
   simulator.uninstall();
 });
 
+test('simulator drives Play in-app update through playUpdateState events', () => {
+  const windowRef: Record<string, unknown> = {};
+  const simulator = simulatorModule.installDTunnelSDKSimulator({
+    window: windowRef,
+    autoEvents: true,
+    state: { playUpdate: { status: 'available', mode: 'FLEXIBLE', nativePrompt: false, availableVersionCode: 455 } },
+  });
+
+  const { VTunnelSDK } = require('../sdk/vtunnel-sdk.js');
+  const sdk = new VTunnelSDK({ window: windowRef, strict: true });
+
+  const statuses: string[] = [];
+  sdk.on('playUpdateState', (event: { payload: { status: string } }) => {
+    // Vt + Dt aliases both fire for the same change.
+    if (statuses[statuses.length - 1] !== event.payload.status) statuses.push(event.payload.status);
+  });
+
+  const initial = sdk.playUpdate.getState();
+  assert.equal(initial.status, 'available');
+  assert.equal(initial.availableVersionCode, 455);
+  assert.equal(initial.nativePrompt, false);
+
+  sdk.playUpdate.start('FLEXIBLE');
+  assert.deepEqual(statuses, ['downloading', 'downloaded']);
+  assert.equal(sdk.playUpdate.isDownloaded(), true);
+
+  sdk.playUpdate.complete();
+  assert.deepEqual(statuses, ['downloading', 'downloaded', 'installing', 'installed']);
+  assert.equal(sdk.playUpdate.getState().status, 'installed');
+
+  const startCall = simulator.getCalls().find((c) => c.objectName === 'VtPlayUpdate' && c.methodName === 'start');
+  assert.deepEqual(startCall?.args, ['FLEXIBLE']);
+
+  sdk.destroy();
+  simulator.uninstall();
+});
+

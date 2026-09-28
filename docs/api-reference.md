@@ -10,6 +10,7 @@ Esta é a documentação técnica detalhada e exaustiva de todos os métodos, cl
 2. [sdk.main (VPN, Conexão e Anúncios)](#2-sdkmain-vpn-conexão-e-anúncios)
 3. [sdk.config (Categorias, Servidores e Importação Offline)](#3-sdkconfig-categorias-servidores-e-importação)
 4. [sdk.dns (Custom DNS - IPv4 e IPv6)](#4-sdkdns-custom-dns---ipv4-e-ipv6)
+    - [sdk.playUpdate (Atualização pela Google Play)](#41-sdkplayupdate-atualização-pela-google-play)
 5. [sdk.android (Sistema Android e Hardware)](#5-sdkandroid-sistema-android-e-hardware)
 6. [sdk.app (Telas e Configurações Globais)](#6-sdkapp-telas-e-configurações-globais)
 7. [sdk.text (Internacionalização Dinâmica)](#7-sdktext-internacionalização-dinâmica)
@@ -202,6 +203,61 @@ O módulo `sdk.dns` expõe o controle de DNS customizado do cliente, integrando 
 #### `sdk.dns.showDialog(): void`
 - **Bridge nativa**: `window.VtShowCustomDnsDialog.execute()`
 - **Descrição**: Abre o diálogo nativo do Android para o usuário gerenciar ou selecionar um preset de DNS na interface do sistema.
+
+---
+
+## 4.1 sdk.playUpdate (Atualização pela Google Play)
+
+Integra o **In-App Updates** da Google Play ao layout. Só funciona em apps instalados pela Play; em APK instalado por fora o status fica `none`.
+
+No painel:
+- `APP_PLAY_UPDATE_MODE` (`OFF`, `FLEXIBLE`, `IMMEDIATE`) controla a verificação automática depois da sincronização.
+- `APP_PLAY_UPDATE_NATIVE_PROMPT = false` desliga o aviso nativo "Atualização pronta"; aí o layout mostra o aviso e chama `complete()`.
+
+Os métodos funcionam em qualquer modo, inclusive `OFF`, para o layout decidir quando oferecer o update.
+
+#### `sdk.playUpdate.getState(): VTunnelPlayUpdateState | null`
+- **Bridge nativa**: `window.VtPlayUpdate.getState()`
+- **Retorno**:
+  ```json
+  {
+    "status": "downloaded",
+    "mode": "FLEXIBLE",
+    "nativePrompt": false,
+    "availableVersionCode": 455,
+    "stalenessDays": 2,
+    "flexibleAllowed": true,
+    "immediateAllowed": true,
+    "bytesDownloaded": 10485760,
+    "totalBytesToDownload": 10485760
+  }
+  ```
+- **Status**: `idle`, `none`, `unavailable`, `available`, `downloading`, `downloaded`, `installing`, `installed`, `canceled`, `failed`.
+
+#### `sdk.playUpdate.check(): void`
+- **Bridge nativa**: `window.VtPlayUpdate.check()`
+- **Descrição**: Consulta a Play de novo. O resultado chega pelo evento `playUpdateState`.
+
+#### `sdk.playUpdate.start(type?: 'FLEXIBLE' | 'IMMEDIATE'): void`
+- **Bridge nativa**: `window.VtPlayUpdate.start(type)`
+- **Descrição**: Abre o fluxo da Play. `FLEXIBLE` (padrão) baixa em segundo plano; `IMMEDIATE` abre a tela cheia da Play.
+
+#### `sdk.playUpdate.complete(): void`
+- **Bridge nativa**: `window.VtPlayUpdate.complete()`
+- **Descrição**: Instala um update `FLEXIBLE` já baixado (`status: 'downloaded'`). O app reinicia; a VPN conectada cai durante a instalação.
+
+#### `sdk.playUpdate.isDownloaded(): boolean`
+- Atalho para `getState()?.status === 'downloaded'`.
+
+**Exemplo** (aviso próprio no layout):
+```javascript
+sdk.on('playUpdateState', ({ payload }) => {
+  if (payload?.status === 'downloaded') showMyUpdateBanner();
+  if (payload?.status === 'downloading') setProgress(payload.bytesDownloaded / payload.totalBytesToDownload);
+});
+// No botão "Reiniciar" do banner:
+sdk.playUpdate.complete();
+```
 
 ---
 

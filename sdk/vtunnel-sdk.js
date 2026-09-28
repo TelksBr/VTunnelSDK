@@ -85,6 +85,7 @@
     'VtIsSafeMode',
     'VtCustomDns',
     'VtShowCustomDnsDialog',
+    'VtPlayUpdate',
   ]);
 
   const DT_BRIDGE_OBJECTS = Object.freeze(
@@ -177,6 +178,10 @@
     reloadRequest: {
       callbacks: ['VtReloadRequestEvent', 'vtReloadRequestListener', 'DtReloadRequestEvent', 'dtReloadRequestListener'],
       parseAsJson: false,
+    },
+    playUpdateState: {
+      callbacks: ['VtPlayUpdateStateEvent', 'vtPlayUpdateStateListener', 'DtPlayUpdateStateEvent', 'dtPlayUpdateStateListener'],
+      parseAsJson: true,
     },
   });
 
@@ -799,6 +804,25 @@
     }
   }
 
+  class PlayUpdateModule extends ModuleBase {
+    getState() {
+      return this.callJson('VtPlayUpdate', 'getState');
+    }
+    check() {
+      this.callVoid('VtPlayUpdate', 'check');
+    }
+    start(type) {
+      this.callVoid('VtPlayUpdate', 'start', [type === 'IMMEDIATE' ? 'IMMEDIATE' : 'FLEXIBLE']);
+    }
+    complete() {
+      this.callVoid('VtPlayUpdate', 'complete');
+    }
+    isDownloaded() {
+      const state = this.getState();
+      return Boolean(state && state.status === 'downloaded');
+    }
+  }
+
   class VTunnelSDK {
     constructor(options) {
       const config = options || {};
@@ -828,6 +852,7 @@
       this.app = new AppModule(this.gateway);
       this.android = new AndroidModule(this.gateway);
       this.dns = new DnsModule(this.gateway);
+      this.playUpdate = new PlayUpdateModule(this.gateway);
 
       if (this.autoRegisterNativeEvents) {
         this.registerNativeEventHandlers();

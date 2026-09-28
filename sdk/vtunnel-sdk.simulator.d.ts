@@ -19,6 +19,7 @@ import type {
   VTunnelVPNState,
   VTunnelCustomDnsConfig,
   VTunnelDnsPreset,
+  VTunnelPlayUpdateState,
 } from './vtunnel-sdk.js';
 
 export interface VTunnelSDKSimulatorState {
@@ -75,6 +76,7 @@ export interface VTunnelSDKSimulatorState {
   customDns: VTunnelCustomDnsConfig;
   dnsPresets: VTunnelDnsPreset[];
   lastCustomDnsDialogShown?: boolean;
+  playUpdate: VTunnelPlayUpdateState;
 }
 
 export type VTunnelSDKSimulatorStatePatch = {

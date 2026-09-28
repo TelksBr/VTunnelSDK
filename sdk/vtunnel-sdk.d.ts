@@ -19,7 +19,8 @@ export type VTunnelSemanticEventName =
   | 'airplaneState'
   | 'hotSpotState'
   | 'hotSpotInfo'
-  | 'reloadRequest';
+  | 'reloadRequest'
+  | 'playUpdateState';
 
 export type VTunnelCallbackName =
   | 'VtVpnStateEvent'
@@ -43,6 +44,7 @@ export type VTunnelCallbackName =
   | 'VtHotSpotStateEvent'
   | 'VtHotSpotInfoEvent'
   | 'VtReloadRequestEvent'
+  | 'VtPlayUpdateStateEvent'
   | 'vtVpnStateListener'
   | 'vtVpnStartedSuccessListener'
   | 'vtVpnStoppedSuccessListener'
@@ -63,6 +65,7 @@ export type VTunnelCallbackName =
   | 'vtHotSpotStateListener'
   | 'vtHotSpotInfoListener'
   | 'vtReloadRequestListener'
+  | 'vtPlayUpdateStateListener'
   | 'DtVpnStateEvent'
   | 'DtVpnStartedSuccessEvent'
   | 'DtVpnStoppedSuccessEvent'
@@ -84,6 +87,7 @@ export type VTunnelCallbackName =
   | 'DtHotSpotStateEvent'
   | 'DtHotSpotInfoEvent'
   | 'DtReloadRequestEvent'
+  | 'DtPlayUpdateStateEvent'
   | 'dtVpnStateListener'
   | 'dtVpnStartedSuccessListener'
   | 'dtVpnStoppedSuccessListener'
@@ -103,7 +107,8 @@ export type VTunnelCallbackName =
   | 'dtAirplaneStateListener'
   | 'dtHotSpotStateListener'
   | 'dtHotSpotInfoListener'
-  | 'dtReloadRequestListener';
+  | 'dtReloadRequestListener'
+  | 'dtPlayUpdateStateListener';
 
 export type DTunnelBridgeObjectName =
   | 'DtSetConfig'
@@ -188,7 +193,8 @@ export type DTunnelBridgeObjectName =
   | 'DtCopyDiagnosticReport'
   | 'DtIsSafeMode'
   | 'DtCustomDns'
-  | 'DtShowCustomDnsDialog';
+  | 'DtShowCustomDnsDialog'
+  | 'DtPlayUpdate';
 
 export type VTOnlyBridgeObjectName =
   | 'VtSetConfig'
@@ -273,7 +279,8 @@ export type VTOnlyBridgeObjectName =
   | 'VtCopyDiagnosticReport'
   | 'VtIsSafeMode'
   | 'VtCustomDns'
-  | 'VtShowCustomDnsDialog';
+  | 'VtShowCustomDnsDialog'
+  | 'VtPlayUpdate';
 
 export type VTunnelBridgeObjectName = VTOnlyBridgeObjectName | DTunnelBridgeObjectName;
 
@@ -303,6 +310,35 @@ export interface VTunnelHotSpotInfo {
   socksUdpProxy?: string;
   pacUrl: string;
   helpUrl: string;
+}
+
+export type VTunnelPlayUpdateStatus =
+  | 'idle'
+  | 'none'
+  | 'unavailable'
+  | 'available'
+  | 'downloading'
+  | 'downloaded'
+  | 'installing'
+  | 'installed'
+  | 'canceled'
+  | 'failed';
+
+export type VTunnelPlayUpdateType = 'FLEXIBLE' | 'IMMEDIATE';
+
+export interface VTunnelPlayUpdateState {
+  status: VTunnelPlayUpdateStatus;
+  /** Panel APP_PLAY_UPDATE_MODE: OFF, FLEXIBLE or IMMEDIATE. */
+  mode: 'OFF' | VTunnelPlayUpdateType | string;
+  /** false when the panel disabled the native "update ready" dialog. */
+  nativePrompt: boolean;
+  availableVersionCode: number;
+  /** Days since Play learned about the update; -1 when unknown. */
+  stalenessDays: number;
+  flexibleAllowed: boolean;
+  immediateAllowed: boolean;
+  bytesDownloaded: number;
+  totalBytesToDownload: number;
 }
 
 export type VTunnelAction =
@@ -459,6 +495,7 @@ export interface VTunnelEventPayloadMap {
   hotSpotState: VTunnelHotSpotStatus | string | null;
   hotSpotInfo: VTunnelParsedJson<VTunnelHotSpotInfo>;
   reloadRequest: string | null;
+  playUpdateState: VTunnelParsedJson<VTunnelPlayUpdateState>;
 }
 
 export interface VTunnelEventRawPayloadMap {
@@ -483,6 +520,7 @@ export interface VTunnelEventRawPayloadMap {
   hotSpotState: string | null;
   hotSpotInfo: string | null;
   reloadRequest: string | null;
+  playUpdateState: string | null;
 }
 
 export interface VTunnelEventCallbackMap {
@@ -507,6 +545,7 @@ export interface VTunnelEventCallbackMap {
   hotSpotState: 'VtHotSpotStateEvent';
   hotSpotInfo: 'VtHotSpotInfoEvent';
   reloadRequest: 'VtReloadRequestEvent';
+  playUpdateState: 'VtPlayUpdateStateEvent';
 }
 
 export interface DTunnelEventCallbackMap {
@@ -531,6 +570,7 @@ export interface DTunnelEventCallbackMap {
   hotSpotState: 'DtHotSpotStateEvent';
   hotSpotInfo: 'DtHotSpotInfoEvent';
   reloadRequest: 'DtReloadRequestEvent';
+  playUpdateState: 'DtPlayUpdateStateEvent';
 }
 
 export interface VTunnelCallbackToEventMap {
@@ -616,6 +656,10 @@ export interface VTunnelCallbackToEventMap {
   vtReloadRequestListener: 'reloadRequest';
   DtReloadRequestEvent: 'reloadRequest';
   dtReloadRequestListener: 'reloadRequest';
+  VtPlayUpdateStateEvent: 'playUpdateState';
+  vtPlayUpdateStateListener: 'playUpdateState';
+  DtPlayUpdateStateEvent: 'playUpdateState';
+  dtPlayUpdateStateListener: 'playUpdateState';
 }
 
 export interface VTunnelSemanticEventEnvelope<E extends VTunnelSemanticEventName = VTunnelSemanticEventName> {
@@ -811,6 +855,18 @@ export declare class VTunnelDnsModule {
   showDialog(): void;
 }
 
+/** Google Play In-App Updates (only for apps installed from Play). */
+export declare class VTunnelPlayUpdateModule {
+  getState(): VTunnelPlayUpdateState | null;
+  /** Asks Play again; the result arrives through the `playUpdateState` event. */
+  check(): void;
+  /** Opens the Play update flow. Defaults to FLEXIBLE. */
+  start(type?: VTunnelPlayUpdateType): void;
+  /** Installs a downloaded FLEXIBLE update (the app restarts). */
+  complete(): void;
+  isDownloaded(): boolean;
+}
+
 export declare class VTunnelSDK {
   static VERSION: string;
   static BRIDGE_OBJECTS: readonly VTunnelBridgeObjectName[];
@@ -837,6 +893,7 @@ export declare class VTunnelSDK {
   readonly app: VTunnelAppModule;
   readonly android: VTunnelAndroidModule;
   readonly dns: VTunnelDnsModule;
+  readonly playUpdate: VTunnelPlayUpdateModule;
 
   constructor(options?: VTunnelSDKOptions);
 
@@ -969,6 +1026,11 @@ export type DTunnelCustomDnsConfig = VTunnelCustomDnsConfig;
 export type DTunnelDnsPreset = VTunnelDnsPreset;
 export type DTunnelDnsModule = VTunnelDnsModule;
 export declare const DTunnelDnsModule: typeof VTunnelDnsModule;
+export type DTunnelPlayUpdateStatus = VTunnelPlayUpdateStatus;
+export type DTunnelPlayUpdateType = VTunnelPlayUpdateType;
+export type DTunnelPlayUpdateState = VTunnelPlayUpdateState;
+export type DTunnelPlayUpdateModule = VTunnelPlayUpdateModule;
+export declare const DTunnelPlayUpdateModule: typeof VTunnelPlayUpdateModule;
 
 export declare class DTunnelSDK {
   static VERSION: string;
@@ -993,6 +1055,7 @@ export declare class DTunnelSDK {
   readonly app: DTunnelAppModule;
   readonly android: DTunnelAndroidModule;
   readonly dns: DTunnelDnsModule;
+  readonly playUpdate: DTunnelPlayUpdateModule;
 
   constructor(options?: DTunnelSDKOptions);
 
