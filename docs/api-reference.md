@@ -49,7 +49,7 @@ Inscreve um ouvinte para eventos semânticos, eventos nativos ou erros.
   });
   // Hotspot proxy endpoints for layout:
   sdk.on('hotSpotInfo', (event) => {
-    const info = event.payload; // { ip, httpPort, socksPort, socksUdpPort, udpSupported, pacUrl, helpUrl, ... }
+    const info = event.payload; // { ip, httpPort, socksPort, socksUdpPort, udpSupported, pacUrl, helpUrl, whatsappChatPort, whatsappMediaPort, ... }
   });
   // Para remover o listener:
   unsubscribe();
@@ -334,10 +334,10 @@ Os métodos antigos `sdk.config.importConfig(payload)`, `hasPendingConfigImport(
 | `getStatusBarHeight()` | `number \| null` | `VtGetStatusBarHeight.execute()` | Retorna a altura da barra de status em pixels para cálculo de insets seguros. |
 | `getNavigationBarHeight()` | `number \| null` | `VtGetNavigationBarHeight.execute()` | Retorna a altura da barra de navegação virtual em pixels. |
 | `openExternalUrl(url: string)` | `void` | `VtOpenExternalUrl.execute(url)` | Abre uma URL no navegador padrão do dispositivo fora do WebView. |
-| `startHotSpotService(port?: number)` | `void` | `VtStartHotSpotService.execute(port)` | Inicia o proxy HotSpot (HTTP + SOCKS + PAC). VPN precisa estar conectado. |
+| `startHotSpotService(port?: number)` | `void` | `VtStartHotSpotService.execute(port)` | Inicia o proxy HotSpot (HTTP + SOCKS + PAC + proxy do WhatsApp nas portas 5222/7777). VPN precisa estar conectado. |
 | `stopHotSpotService()` | `void` | `VtStopHotSpotService.execute()` | Para o serviço de HotSpot. |
 | `getHotSpotStatus()` | `VTunnelHotSpotStatus \| null` | `VtGetStatusHotSpotService.execute()` | Status simples (`RUNNING`, `STOPPED`, …). |
-| `getHotSpotInfo()` | `VTunnelHotSpotInfo \| null` | `VtGetHotSpotInfo.execute()` | IP, portas HTTP/SOCKS/UDP, PAC, `helpUrl` e flags `udpSupported` para o layout. |
+| `getHotSpotInfo()` | `VTunnelHotSpotInfo \| null` | `VtGetHotSpotInfo.execute()` | IP, portas HTTP/SOCKS/UDP, PAC, `helpUrl`, flag `udpSupported` e portas do proxy do WhatsApp (`whatsappChatPort`, `whatsappMediaPort`, `whatsappProxy`; `0`/vazio quando parado ou se a porta não abriu) para o layout. |
 | `isHotSpotRunning()` | `boolean` | `sdk.android.getHotSpotStatus() === 'RUNNING'` | Atalho para verificar se o proxy de hotspot está ativo. |
 | `getNetworkDownloadBytes()` | `number \| null` | `VtGetNetworkDownloadBytes.execute()` | Total de bytes baixados na sessão atual. |
 | `getNetworkUploadBytes()` | `number \| null` | `VtGetNetworkUploadBytes.execute()` | Total de bytes enviados na sessão atual. |

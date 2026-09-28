@@ -317,6 +317,12 @@ export interface VTunnelHotSpotInfo {
   socksUdpProxy?: string;
   pacUrl: string;
   helpUrl: string;
+  /** WhatsApp built-in proxy (raw TCP) chat port; 0 when stopped or the port could not be opened. */
+  whatsappChatPort?: number;
+  /** WhatsApp built-in proxy media port; 0 when stopped or the port could not be opened. */
+  whatsappMediaPort?: number;
+  /** Host to type in WhatsApp → Proxy; empty when the WhatsApp proxy is not running. */
+  whatsappProxy?: string;
 }
 
 export type VTunnelPlayUpdateStatus =

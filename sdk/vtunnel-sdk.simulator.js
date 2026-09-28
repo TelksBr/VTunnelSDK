@@ -434,6 +434,9 @@
         socksUdpProxy: '192.168.43.1:8580',
         pacUrl: 'http://192.168.43.1:8578/proxy.pac',
         helpUrl: 'http://192.168.43.1:8578/',
+        whatsappChatPort: 0,
+        whatsappMediaPort: 0,
+        whatsappProxy: '',
       },
       networkDownloadBytes: 0,
       networkUploadBytes: 0,
@@ -932,6 +935,9 @@
         socksUdpProxy: `${ip}:${socksUdpPort}`,
         pacUrl: `http://${ip}:${httpPort}/proxy.pac`,
         helpUrl: `http://${ip}:${httpPort}/`,
+        whatsappChatPort: 5222,
+        whatsappMediaPort: 7777,
+        whatsappProxy: ip,
       };
       if (autoEvents) {
         emit('hotSpotState', 'RUNNING');
@@ -942,7 +948,14 @@
     registerBridgePair('VtStopHotSpotService', createExecuteBridgeObject('VtStopHotSpotService', () => {
       state.hotSpotStatus = 'STOPPED';
       if (state.hotSpotInfo) {
-        state.hotSpotInfo = { ...state.hotSpotInfo, state: 'STOPPED', running: false };
+        state.hotSpotInfo = {
+          ...state.hotSpotInfo,
+          state: 'STOPPED',
+          running: false,
+          whatsappChatPort: 0,
+          whatsappMediaPort: 0,
+          whatsappProxy: '',
+        };
       }
       if (autoEvents) {
         emit('hotSpotState', 'STOPPED');
