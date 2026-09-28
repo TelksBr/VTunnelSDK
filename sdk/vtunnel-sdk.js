@@ -86,6 +86,7 @@
     'VtCustomDns',
     'VtShowCustomDnsDialog',
     'VtPlayUpdate',
+    'VtConfigImport',
   ]);
 
   const DT_BRIDGE_OBJECTS = Object.freeze(
@@ -181,6 +182,10 @@
     },
     playUpdateState: {
       callbacks: ['VtPlayUpdateStateEvent', 'vtPlayUpdateStateListener', 'DtPlayUpdateStateEvent', 'dtPlayUpdateStateListener'],
+      parseAsJson: true,
+    },
+    configImport: {
+      callbacks: ['VtConfigImportEvent', 'vtConfigImportListener', 'DtConfigImportEvent', 'dtConfigImportListener'],
       parseAsJson: true,
     },
   });
@@ -823,6 +828,21 @@
     }
   }
 
+  class ConfigImportModule extends ModuleBase {
+    getPending() {
+      return this.callJson('VtConfigImport', 'getPending');
+    }
+    hasPending() {
+      return Boolean(this.getPending());
+    }
+    confirm() {
+      this.callVoid('VtConfigImport', 'confirm');
+    }
+    reject() {
+      this.callVoid('VtConfigImport', 'reject');
+    }
+  }
+
   class VTunnelSDK {
     constructor(options) {
       const config = options || {};
@@ -853,6 +873,7 @@
       this.android = new AndroidModule(this.gateway);
       this.dns = new DnsModule(this.gateway);
       this.playUpdate = new PlayUpdateModule(this.gateway);
+      this.configImport = new ConfigImportModule(this.gateway);
 
       if (this.autoRegisterNativeEvents) {
         this.registerNativeEventHandlers();

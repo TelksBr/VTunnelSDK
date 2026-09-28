@@ -29,6 +29,7 @@ O VTunnel SDK unifica todos os disparos assíncronos do host Android em uma API 
 | `hotSpotState` | `VtHotSpotStateEvent(status)` / `vtHotSpotStateListener(status)`<br>`DtHotSpotStateEvent(status)` / `dtHotSpotStateListener(status)` | `VTunnelHotSpotStatus \| null` |
 | `reloadRequest` | `VtReloadRequestEvent()` / `vtReloadRequestListener()`<br>`DtReloadRequestEvent()` / `dtReloadRequestListener()` | `string \| null` |
 | `playUpdateState` | `VtPlayUpdateStateEvent(json)` / `vtPlayUpdateStateListener(json)`<br>`DtPlayUpdateStateEvent(json)` / `dtPlayUpdateStateListener(json)` | `VTunnelPlayUpdateState` (JSON) |
+| `configImport` | `VtConfigImportEvent(json)` / `vtConfigImportListener(json)`<br>`DtConfigImportEvent(json)` / `dtConfigImportListener(json)` | `VTunnelConfigImportState` (JSON) |
 
 ---
 

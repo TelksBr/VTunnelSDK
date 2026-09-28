@@ -89,6 +89,7 @@
     'VtCustomDns',
     'VtShowCustomDnsDialog',
     'VtPlayUpdate',
+    'VtConfigImport',
   ]);
 
   const DT_BRIDGE_OBJECT_NAMES = Object.freeze(
@@ -122,6 +123,7 @@
     'VtHotSpotInfoEvent',
     'VtReloadRequestEvent',
     'VtPlayUpdateStateEvent',
+    'VtConfigImportEvent',
     'vtVpnStateListener',
     'vtVpnStartedSuccessListener',
     'vtVpnStoppedSuccessListener',
@@ -143,6 +145,7 @@
     'vtHotSpotInfoListener',
     'vtReloadRequestListener',
     'vtPlayUpdateStateListener',
+    'vtConfigImportListener',
     'DtVpnStateEvent',
     'DtVpnStartedSuccessEvent',
     'DtVpnStoppedSuccessEvent',
@@ -165,6 +168,7 @@
     'DtHotSpotInfoEvent',
     'DtReloadRequestEvent',
     'DtPlayUpdateStateEvent',
+    'DtConfigImportEvent',
     'dtVpnStateListener',
     'dtVpnStartedSuccessListener',
     'dtVpnStoppedSuccessListener',
@@ -186,6 +190,7 @@
     'dtHotSpotInfoListener',
     'dtReloadRequestListener',
     'dtPlayUpdateStateListener',
+    'dtConfigImportListener',
   ]);
 
   const SEMANTIC_EVENT_TO_CALLBACK = Object.freeze({
@@ -211,6 +216,7 @@
     hotSpotInfo: 'VtHotSpotInfoEvent',
     reloadRequest: 'VtReloadRequestEvent',
     playUpdateState: 'VtPlayUpdateStateEvent',
+    configImport: 'VtConfigImportEvent',
   });
 
   const JSON_EVENT_NAMES = Object.freeze([
@@ -218,6 +224,7 @@
     'messageError',
     'notification',
     'playUpdateState',
+    'configImport',
   ]);
 
   function isPlainObject(value) {
@@ -461,6 +468,7 @@
         bytesDownloaded: 0,
         totalBytesToDownload: 0,
       },
+      configImport: null,
     };
   }
 
@@ -1090,6 +1098,60 @@
 
     registerBridgePair('VtPlayUpdate', playUpdateObject);
 
+    // Offline config import: simulateConfigImport() -> pending -> confirm / reject
+    function finishConfigImport(result) {
+      state.configImport = null;
+      if (autoEvents) emit('configImport', result);
+    }
+
+    function simulateConfigImport(configs, source) {
+      const items = (Array.isArray(configs) && configs.length ? configs : [{ name: 'Config Importada' }])
+        .map((item) => ({
+          name: String((item && item.name) || 'Config Importada'),
+          description: item && item.description != null ? String(item.description) : null,
+          mode: String((item && item.mode) || 'SSH'),
+        }));
+      state.configImport = {
+        status: 'pending',
+        source: source || 'deeplink',
+        count: items.length,
+        configs: items,
+      };
+      if (autoEvents) emit('configImport', state.configImport);
+      return controller;
+    }
+
+    const configImportObject = {
+      getPending: function getPending() {
+        return runCall('VtConfigImport', 'getPending', [], () => toJsonStringOrNull(state.configImport));
+      },
+      execute: function execute() {
+        return runCall('VtConfigImport', 'execute', [], () => toJsonStringOrNull(state.configImport));
+      },
+      confirm: function confirm() {
+        return runCall('VtConfigImport', 'confirm', [], () => {
+          const pending = state.configImport;
+          if (!pending) return;
+          let nextId = 1000 + state.configs.reduce((sum, category) => sum + (category.items || []).length, 0);
+          finishConfigImport({
+            status: 'imported',
+            source: pending.source,
+            count: pending.count,
+            configs: pending.configs.map((item) => ({ id: ++nextId, ...item })),
+          });
+        });
+      },
+      reject: function reject() {
+        return runCall('VtConfigImport', 'reject', [], () => {
+          const pending = state.configImport;
+          if (!pending) return;
+          finishConfigImport({ status: 'rejected', source: pending.source, count: 0, configs: [] });
+        });
+      },
+    };
+
+    registerBridgePair('VtConfigImport', configImportObject);
+
     function install() {
       if (installed) return controller;
 
@@ -1201,6 +1263,7 @@
       clearImplementations,
       emit,
       getBridgeObject,
+      simulateConfigImport,
     };
 
     return controller;

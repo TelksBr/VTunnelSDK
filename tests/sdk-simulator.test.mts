@@ -45,6 +45,7 @@ const simulatorModule = require('../sdk/dtunnel-sdk.simulator.js') as {
     }>;
     setState: (state: Record<string, unknown>) => void;
     emit: (name: string, payload?: unknown, ...extraArgs: unknown[]) => boolean;
+    simulateConfigImport: (configs?: Array<Record<string, unknown>>, source?: string) => unknown;
   };
 };
 
@@ -270,6 +271,43 @@ test('simulator drives Play in-app update through playUpdateState events', () =>
 
   const startCall = simulator.getCalls().find((c) => c.objectName === 'VtPlayUpdate' && c.methodName === 'start');
   assert.deepEqual(startCall?.args, ['FLEXIBLE']);
+
+  sdk.destroy();
+  simulator.uninstall();
+});
+
+test('simulator drives offline config import through configImport events', () => {
+  const windowRef: Record<string, unknown> = {};
+  const simulator = simulatorModule.installDTunnelSDKSimulator({ window: windowRef, autoEvents: true });
+
+  const { VTunnelSDK } = require('../sdk/vtunnel-sdk.js');
+  const sdk = new VTunnelSDK({ window: windowRef, strict: true });
+
+  const events: Array<{ status: string; count: number; configs: Array<{ id?: number; name: string }> }> = [];
+  sdk.on('configImport', (event: { payload: (typeof events)[number] }) => {
+    // Vt + Dt aliases both fire for the same change.
+    if (events[events.length - 1]?.status !== event.payload.status) events.push(event.payload);
+  });
+
+  assert.equal(sdk.configImport.getPending(), null);
+  assert.equal(sdk.configImport.hasPending(), false);
+
+  simulator.simulateConfigImport([{ name: 'VIVO SSH', mode: 'SSH' }, { name: 'TIM XRAY', mode: 'XRAY' }], 'clipboard');
+  assert.equal(events[0].status, 'pending');
+  assert.equal(events[0].count, 2);
+  const pending = sdk.configImport.getPending();
+  assert.equal(pending.source, 'clipboard');
+  assert.deepEqual(pending.configs.map((c: { name: string }) => c.name), ['VIVO SSH', 'TIM XRAY']);
+
+  sdk.configImport.confirm();
+  assert.equal(events[1].status, 'imported');
+  assert.equal(events[1].configs.every((c) => typeof c.id === 'number'), true);
+  assert.equal(sdk.configImport.hasPending(), false);
+
+  simulator.simulateConfigImport([{ name: 'OUTRA' }]);
+  sdk.configImport.reject();
+  assert.deepEqual(events.map((e) => e.status), ['pending', 'imported', 'pending', 'rejected']);
+  assert.equal(sdk.configImport.getPending(), null);
 
   sdk.destroy();
   simulator.uninstall();

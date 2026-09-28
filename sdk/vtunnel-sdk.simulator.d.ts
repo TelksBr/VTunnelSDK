@@ -20,6 +20,8 @@ import type {
   VTunnelCustomDnsConfig,
   VTunnelDnsPreset,
   VTunnelPlayUpdateState,
+  VTunnelConfigImportItem,
+  VTunnelConfigImportState,
 } from './vtunnel-sdk.js';
 
 export interface VTunnelSDKSimulatorState {
@@ -77,6 +79,8 @@ export interface VTunnelSDKSimulatorState {
   dnsPresets: VTunnelDnsPreset[];
   lastCustomDnsDialogShown?: boolean;
   playUpdate: VTunnelPlayUpdateState;
+  /** Pending offline import (status "pending"), or null. */
+  configImport: VTunnelConfigImportState | null;
 }
 
 export type VTunnelSDKSimulatorStatePatch = {
@@ -154,6 +158,12 @@ export interface VTunnelSDKSimulatorController {
   ): boolean;
 
   getBridgeObject(objectName: VTunnelBridgeObjectName | (string & {})): unknown;
+
+  /** Simulates a vt:// link or clipboard payload arriving (emits configImport "pending"). */
+  simulateConfigImport(
+    configs?: Array<Partial<Omit<VTunnelConfigImportItem, 'id'>>>,
+    source?: 'deeplink' | 'clipboard',
+  ): this;
 }
 
 export interface VTunnelSDKSimulatorAPI {

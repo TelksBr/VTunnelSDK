@@ -11,6 +11,7 @@ Esta é a documentação técnica detalhada e exaustiva de todos os métodos, cl
 3. [sdk.config (Categorias, Servidores e Importação Offline)](#3-sdkconfig-categorias-servidores-e-importação)
 4. [sdk.dns (Custom DNS - IPv4 e IPv6)](#4-sdkdns-custom-dns---ipv4-e-ipv6)
     - [sdk.playUpdate (Atualização pela Google Play)](#41-sdkplayupdate-atualização-pela-google-play)
+    - [sdk.configImport (Importação de config offline)](#42-sdkconfigimport-importação-de-config-offline)
 5. [sdk.android (Sistema Android e Hardware)](#5-sdkandroid-sistema-android-e-hardware)
 6. [sdk.app (Telas e Configurações Globais)](#6-sdkapp-telas-e-configurações-globais)
 7. [sdk.text (Internacionalização Dinâmica)](#7-sdktext-internacionalização-dinâmica)
@@ -258,6 +259,68 @@ sdk.on('playUpdateState', ({ payload }) => {
 // No botão "Reiniciar" do banner:
 sdk.playUpdate.complete();
 ```
+
+---
+
+## 4.2 sdk.configImport (Importação de config offline)
+
+Trata os links `vt://`, `vtunnel://` e `dt://` recebidos por deep link ou copiados para a área de transferência.
+
+No painel, `APP_CONFIG_IMPORT_NATIVE_PROMPT = false` desliga o diálogo nativo "Importar configuração". Nesse caso o app só guarda o link como pendente e dispara `configImport` com `status: 'pending'`. O layout mostra o próprio modal e chama `confirm()` ou `reject()`.
+
+O link fica pendente até ser confirmado ou recusado. Se o layout ainda não estava carregado, ou o app foi fechado antes de responder, o evento é disparado de novo quando o app volta. Também dá para consultar na inicialização com `getPending()`.
+
+O evento de resultado (`imported`, `rejected`, `failed`) é disparado com o diálogo nativo ligado ou desligado. Com o diálogo desligado, o app não mostra toast; o feedback fica a cargo do layout.
+
+#### `sdk.configImport.getPending(): VTunnelConfigImportState | null`
+- **Bridge nativa**: `window.VtConfigImport.getPending()`
+- **Descrição**: Prévia do que será importado (ainda não importado), ou `null` quando não há nada pendente.
+- **Retorno**:
+  ```json
+  {
+    "status": "pending",
+    "source": "deeplink",
+    "count": 2,
+    "configs": [
+      { "name": "VIVO SSH", "description": null, "mode": "SSH" },
+      { "name": "TIM XRAY", "description": "Porta 443", "mode": "XRAY" }
+    ]
+  }
+  ```
+- **source**: `deeplink` ou `clipboard`.
+
+#### `sdk.configImport.hasPending(): boolean`
+- Atalho para `getPending() !== null`.
+
+#### `sdk.configImport.confirm(): void`
+- **Bridge nativa**: `window.VtConfigImport.confirm()`
+- **Descrição**: Importa as configs pendentes na categoria "Importada" e seleciona a primeira. O resultado chega pelo evento `configImport`:
+  - `status: 'imported'`, com `configs[].id` preenchido;
+  - `status: 'failed'` se o conteúdo for inválido (o pendente é descartado).
+
+#### `sdk.configImport.reject(): void`
+- **Bridge nativa**: `window.VtConfigImport.reject()`
+- **Descrição**: Descarta o link pendente e dispara `configImport` com `status: 'rejected'`.
+
+**Exemplo** (modal próprio no layout):
+```javascript
+function showImport(state) {
+  if (state?.status === 'pending') openImportModal(state.configs);
+}
+
+showImport(sdk.configImport.getPending());
+sdk.on('configImport', ({ payload }) => {
+  showImport(payload);
+  if (payload?.status === 'imported') toast(`${payload.count} config(s) importada(s)`);
+  if (payload?.status === 'failed') toast('Config inválida');
+});
+
+// Botões do modal:
+sdk.configImport.confirm();
+sdk.configImport.reject();
+```
+
+Os métodos antigos `sdk.config.importConfig(payload)`, `hasPendingConfigImport()` e `getPendingConfigImportDetails()` continuam funcionando.
 
 ---
 
