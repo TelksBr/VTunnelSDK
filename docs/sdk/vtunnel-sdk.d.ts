@@ -406,13 +406,18 @@ export interface VTunnelCustomDnsConfig {
   enabled: boolean;
   primary: string;
   secondary: string;
+  primaryIpv6?: string;
+  secondaryIpv6?: string;
   servers: string[];
 }
 
 export interface VTunnelDnsPreset {
+  id?: string;
   name: string;
   primary: string;
   secondary: string;
+  primaryIpv6?: string;
+  secondaryIpv6?: string;
 }
 
 export type VTunnelParsedJson<T> = T | string | null;
@@ -776,9 +781,10 @@ export declare class VTunnelDnsModule {
   get(): VTunnelCustomDnsConfig | null;
   isEnabled(): boolean;
   setEnabled(enabled: boolean): void;
-  set(enabled: boolean, primary: string, secondary: string): void;
-  set(config: { enabled?: boolean; primary?: string; secondary?: string }): void;
-  save(enabled: boolean, primary: string, secondary: string): void;
+  set(enabled: boolean, primary: string, secondary: string, primaryIpv6?: string, secondaryIpv6?: string): void;
+  set(config: { enabled?: boolean; primary?: string; secondary?: string; primaryIpv6?: string; secondaryIpv6?: string }): void;
+  save(enabled: boolean, primary: string, secondary: string, primaryIpv6?: string, secondaryIpv6?: string): void;
+  save(config: { enabled?: boolean; primary?: string; secondary?: string; primaryIpv6?: string; secondaryIpv6?: string }): void;
   getPresets(): VTunnelDnsPreset[] | null;
   showDialog(): void;
 }

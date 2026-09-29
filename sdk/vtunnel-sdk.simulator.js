@@ -451,14 +451,16 @@
         enabled: false,
         primary: '1.1.1.1',
         secondary: '1.0.0.1',
-        servers: ['1.1.1.1', '1.0.0.1'],
+        primaryIpv6: '2606:4700:4700::1111',
+        secondaryIpv6: '2606:4700:4700::1001',
+        servers: ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001'],
       },
       dnsPresets: [
-        { id: 'cloudflare', name: 'Cloudflare', primary: '1.1.1.1', secondary: '1.0.0.1' },
-        { id: 'google', name: 'Google DNS', primary: '8.8.8.8', secondary: '8.8.4.4' },
-        { id: 'quad9', name: 'Quad9', primary: '9.9.9.9', secondary: '149.112.112.112' },
-        { id: 'adguard', name: 'AdGuard DNS', primary: '94.140.14.14', secondary: '94.140.15.15' },
-        { id: 'opendns', name: 'OpenDNS', primary: '208.67.222.222', secondary: '208.67.220.220' },
+        { id: 'cloudflare', name: 'Cloudflare', primary: '1.1.1.1', secondary: '1.0.0.1', primaryIpv6: '2606:4700:4700::1111', secondaryIpv6: '2606:4700:4700::1001' },
+        { id: 'google', name: 'Google DNS', primary: '8.8.8.8', secondary: '8.8.4.4', primaryIpv6: '2001:4860:4860::8888', secondaryIpv6: '2001:4860:4860::8844' },
+        { id: 'quad9', name: 'Quad9', primary: '9.9.9.9', secondary: '149.112.112.112', primaryIpv6: '2620:fe::fe', secondaryIpv6: '2620:fe::9' },
+        { id: 'adguard', name: 'AdGuard DNS', primary: '94.140.14.14', secondary: '94.140.15.15', primaryIpv6: '2a10:50c0::ad1:ff', secondaryIpv6: '2a10:50c0::ad2:ff' },
+        { id: 'opendns', name: 'OpenDNS', primary: '208.67.222.222', secondary: '208.67.220.220', primaryIpv6: '2620:119:35::35', secondaryIpv6: '2620:119:53::53' },
       ],
       lastCustomDnsDialogShown: false,
       playUpdate: {
@@ -1025,40 +1027,52 @@
           state.customDns.enabled = Boolean(enabled);
         });
       },
-      set: function set(enabledOrJson, primary, secondary) {
+      set: function set(enabledOrJson, primary, secondary, primaryIpv6, secondaryIpv6) {
         const args = Array.from(arguments);
         return runCall('VtCustomDns', 'set', args, () => {
           if (typeof enabledOrJson === 'object' && enabledOrJson !== null) {
             if ('enabled' in enabledOrJson) state.customDns.enabled = Boolean(enabledOrJson.enabled);
             if ('primary' in enabledOrJson) state.customDns.primary = String(enabledOrJson.primary || '');
             if ('secondary' in enabledOrJson) state.customDns.secondary = String(enabledOrJson.secondary || '');
+            if ('primaryIpv6' in enabledOrJson) state.customDns.primaryIpv6 = String(enabledOrJson.primaryIpv6 || '');
+            if ('secondaryIpv6' in enabledOrJson) state.customDns.secondaryIpv6 = String(enabledOrJson.secondaryIpv6 || '');
           } else if (typeof enabledOrJson === 'string' && enabledOrJson.trim().startsWith('{')) {
             try {
               const parsed = JSON.parse(enabledOrJson);
               if ('enabled' in parsed) state.customDns.enabled = Boolean(parsed.enabled);
               if ('primary' in parsed) state.customDns.primary = String(parsed.primary || '');
               if ('secondary' in parsed) state.customDns.secondary = String(parsed.secondary || '');
+              if ('primaryIpv6' in parsed) state.customDns.primaryIpv6 = String(parsed.primaryIpv6 || '');
+              if ('secondaryIpv6' in parsed) state.customDns.secondaryIpv6 = String(parsed.secondaryIpv6 || '');
             } catch (_e) {}
           } else {
             state.customDns.enabled = Boolean(enabledOrJson);
             state.customDns.primary = String(primary || '');
             state.customDns.secondary = String(secondary || '');
+            if (primaryIpv6 !== undefined) state.customDns.primaryIpv6 = String(primaryIpv6 || '');
+            if (secondaryIpv6 !== undefined) state.customDns.secondaryIpv6 = String(secondaryIpv6 || '');
           }
           const servers = [];
           if (state.customDns.primary) servers.push(state.customDns.primary);
           if (state.customDns.secondary) servers.push(state.customDns.secondary);
+          if (state.customDns.primaryIpv6) servers.push(state.customDns.primaryIpv6);
+          if (state.customDns.secondaryIpv6) servers.push(state.customDns.secondaryIpv6);
           state.customDns.servers = servers;
         });
       },
-      save: function save(enabled, primary, secondary) {
+      save: function save(enabled, primary, secondary, primaryIpv6, secondaryIpv6) {
         const args = Array.from(arguments);
         return runCall('VtCustomDns', 'save', args, () => {
           state.customDns.enabled = Boolean(enabled);
           state.customDns.primary = String(primary || '');
           state.customDns.secondary = String(secondary || '');
+          if (primaryIpv6 !== undefined) state.customDns.primaryIpv6 = String(primaryIpv6 || '');
+          if (secondaryIpv6 !== undefined) state.customDns.secondaryIpv6 = String(secondaryIpv6 || '');
           const servers = [];
           if (state.customDns.primary) servers.push(state.customDns.primary);
           if (state.customDns.secondary) servers.push(state.customDns.secondary);
+          if (state.customDns.primaryIpv6) servers.push(state.customDns.primaryIpv6);
+          if (state.customDns.secondaryIpv6) servers.push(state.customDns.secondaryIpv6);
           state.customDns.servers = servers;
         });
       },

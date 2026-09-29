@@ -791,9 +791,19 @@
     setEnabled(enabled) {
       this.callVoid('VtCustomDns', 'setEnabled', [Boolean(enabled)]);
     }
-    set(enabledOrConfig, primary, secondary) {
+    set(enabledOrConfig, primary, secondary, primaryIpv6, secondaryIpv6) {
       if (typeof enabledOrConfig === 'object' && enabledOrConfig !== null) {
         this.callVoid('VtCustomDns', 'set', [JSON.stringify(enabledOrConfig)]);
+        return;
+      }
+      if (primaryIpv6 !== undefined || secondaryIpv6 !== undefined) {
+        this.callVoid('VtCustomDns', 'set', [
+          Boolean(enabledOrConfig),
+          String(primary || ''),
+          String(secondary || ''),
+          String(primaryIpv6 || ''),
+          String(secondaryIpv6 || ''),
+        ]);
         return;
       }
       this.callVoid('VtCustomDns', 'set', [
@@ -802,9 +812,23 @@
         String(secondary || ''),
       ]);
     }
-    save(enabled, primary, secondary) {
+    save(enabledOrConfig, primary, secondary, primaryIpv6, secondaryIpv6) {
+      if (typeof enabledOrConfig === 'object' && enabledOrConfig !== null) {
+        this.set(enabledOrConfig);
+        return;
+      }
+      if (primaryIpv6 !== undefined || secondaryIpv6 !== undefined) {
+        this.callVoid('VtCustomDns', 'save', [
+          Boolean(enabledOrConfig),
+          String(primary || ''),
+          String(secondary || ''),
+          String(primaryIpv6 || ''),
+          String(secondaryIpv6 || ''),
+        ]);
+        return;
+      }
       this.callVoid('VtCustomDns', 'save', [
-        Boolean(enabled),
+        Boolean(enabledOrConfig),
         String(primary || ''),
         String(secondary || ''),
       ]);
