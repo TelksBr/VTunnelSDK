@@ -28,6 +28,7 @@
     'VtGetUser',
     'VtGetLogs',
     'VtClearLogs',
+    'VtShareLogs',
     'VtExecuteVpnStart',
     'VtExecuteVpnStop',
     'VtGetVpnState',
@@ -578,6 +579,13 @@
     }
     clearLogs() {
       this.callVoid('VtClearLogs', 'execute');
+    }
+    shareLogs(customText) {
+      if (typeof customText === 'string' && customText.trim().length > 0) {
+        this.callVoid('VtShareLogs', 'execute', [customText]);
+      } else {
+        this.callVoid('VtShareLogs', 'execute');
+      }
     }
     startVpn() {
       this.callVoid('VtExecuteVpnStart', 'execute');

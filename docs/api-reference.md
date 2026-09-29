@@ -107,6 +107,7 @@ Desregistra todos os listeners e limpa os callbacks globais associados a esta in
 | `getPingResult()` | `string \| null` | `VtGetPingResult.execute()` | Retorna a latência calculada até o servidor ativo (ex: `"45 ms"`). |
 | `getLogs()` | `VTunnelLogEntry[] \| null` | `VtGetLogs.execute()` | Retorna o histórico de logs nativos parseados. |
 | `clearLogs()` | `void` | `VtClearLogs.execute()` | Limpa a lista de logs no app nativo. |
+| `shareLogs(customText?: string)` | `void` | `VtShareLogs.execute()` | Abre a folha de compartilhamento nativa do Android para compartilhar os registros. |
 
 ---
 

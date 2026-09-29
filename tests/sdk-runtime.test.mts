@@ -46,6 +46,9 @@ test('forwards config/main calls to expected bridge objects and methods', () => 
     DtShowLoggerDialog: {
       execute: () => pushCall(calls, 'DtShowLoggerDialog', 'execute', []),
     },
+    DtShareLogs: {
+      execute: (...args: unknown[]) => pushCall(calls, 'DtShareLogs', 'execute', args),
+    },
   };
 
   const sdk = new DTunnelSDK({
@@ -60,6 +63,8 @@ test('forwards config/main calls to expected bridge objects and methods', () => 
   sdk.config.openConfigDialog();
   sdk.main.showMenuDialog();
   sdk.main.showLoggerDialog();
+  sdk.main.shareLogs();
+  sdk.main.shareLogs('custom log line');
 
   assert.equal(username, 'alice');
   assert.deepEqual(calls, [
@@ -69,6 +74,8 @@ test('forwards config/main calls to expected bridge objects and methods', () => 
     { objectName: 'DtExecuteDialogConfig', methodName: 'execute', args: [] },
     { objectName: 'DtShowMenuDialog', methodName: 'execute', args: [] },
     { objectName: 'DtShowLoggerDialog', methodName: 'execute', args: [] },
+    { objectName: 'DtShareLogs', methodName: 'execute', args: [] },
+    { objectName: 'DtShareLogs', methodName: 'execute', args: ['custom log line'] },
   ]);
 
   sdk.destroy();

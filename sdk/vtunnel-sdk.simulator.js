@@ -30,6 +30,7 @@
     'VtGetUser',
     'VtGetLogs',
     'VtClearLogs',
+    'VtShareLogs',
     'VtExecuteVpnStart',
     'VtExecuteVpnStop',
     'VtGetVpnState',
@@ -779,6 +780,14 @@
 
     registerBridgePair('VtClearLogs', createExecuteBridgeObject('VtClearLogs', () => {
       state.logs = [];
+    }));
+
+    registerBridgePair('VtShareLogs', createExecuteBridgeObject('VtShareLogs', (customText) => {
+      const text = (typeof customText === 'string' && customText.trim().length > 0)
+        ? customText
+        : (state.logs || []).map((l) => Object.entries(l).map(([k, v]) => `[${k}] ${v}`).join(' ')).join('\n');
+      appendLog('INFO', `Logs compartilhados (simulado): ${text.slice(0, 100)}`);
+      emit('logsShared', text);
     }));
 
     registerBridgePair('VtExecuteVpnStart', createExecuteBridgeObject('VtExecuteVpnStart', () => {

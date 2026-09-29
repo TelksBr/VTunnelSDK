@@ -141,6 +141,7 @@ export type DTunnelBridgeObjectName =
   | 'DtGetUser'
   | 'DtGetLogs'
   | 'DtClearLogs'
+  | 'DtShareLogs'
   | 'DtExecuteVpnStart'
   | 'DtExecuteVpnStop'
   | 'DtGetVpnState'
@@ -228,6 +229,7 @@ export type VTOnlyBridgeObjectName =
   | 'VtGetUser'
   | 'VtGetLogs'
   | 'VtClearLogs'
+  | 'VtShareLogs'
   | 'VtExecuteVpnStart'
   | 'VtExecuteVpnStop'
   | 'VtGetVpnState'
@@ -811,6 +813,7 @@ export declare class VTunnelConfigModule {
 export declare class VTunnelMainModule {
   getLogs(): VTunnelLogEntry[] | null;
   clearLogs(): void;
+  shareLogs(customText?: string): void;
   startVpn(): void;
   stopVpn(): void;
   getVpnState(): VTunnelVPNState | null;
