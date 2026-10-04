@@ -186,6 +186,7 @@ export type DTunnelBridgeObjectName =
   | 'DtGetHotSpotInfo'
   | 'DtGetNetworkDownloadBytes'
   | 'DtGetNetworkUploadBytes'
+  | 'DtGetStatsSnapshot'
   | 'DtAppVersion'
   | 'DtActionHandler'
   | 'DtCloseApp'
@@ -274,6 +275,7 @@ export type VTOnlyBridgeObjectName =
   | 'VtGetHotSpotInfo'
   | 'VtGetNetworkDownloadBytes'
   | 'VtGetNetworkUploadBytes'
+  | 'VtGetStatsSnapshot'
   | 'VtAppVersion'
   | 'VtActionHandler'
   | 'VtCloseApp'
@@ -849,6 +851,49 @@ export declare class VTunnelTextModule {
   translate(label: string | null): string | null;
 }
 
+export interface VTunnelStatsBatteryPoint {
+  timeMs: number;
+  levelPercent: number | null;
+  chargeRemainingMah: number | null;
+}
+
+export interface VTunnelStatsBatterySnapshot {
+  currentLevelPercent: number | null;
+  currentChargeRemainingMah: number | null;
+  /** Net device battery-level change across available samples, not VTunnel-attributed drain. */
+  usedLevelPercent24h: number | null;
+  /** Net device charge-counter change across available samples, not VTunnel-attributed drain. */
+  netChargeChangeMah24h: number | null;
+  coverageMs: number;
+  history: VTunnelStatsBatteryPoint[];
+  foregroundCpuMs24h: number;
+  backgroundCpuMs24h: number;
+}
+
+export interface VTunnelStatsVpnSnapshot {
+  connected: boolean;
+  sessions: number;
+  totalConnectedMs: number;
+  sessionDurationMs: number;
+  /** Network bytes accounted to the VTunnel app UID; does not include other apps' tunneled payload. */
+  appUidRxBytesThisSession: number | null;
+  /** Network bytes accounted to the VTunnel app UID; does not include other apps' tunneled payload. */
+  appUidTxBytesThisSession: number | null;
+  appUidRxBytesTotal: number;
+  appUidTxBytesTotal: number;
+}
+
+export interface VTunnelStatsSnapshot {
+  capturedAtMs: number;
+  vpn: VTunnelStatsVpnSnapshot;
+  battery: VTunnelStatsBatterySnapshot;
+}
+
+export declare class VTunnelStatsModule {
+  /** Reads a local snapshot; battery and CPU histories are sampled while the app is visible or VPN is connected. */
+  getSnapshot(): VTunnelStatsSnapshot | null;
+}
+
 export declare class VTunnelAppModule {
   cleanApp(): void;
   goToVoiceInputSettings(): void;
@@ -953,6 +998,7 @@ export declare class VTunnelSDK {
 
   readonly config: VTunnelConfigModule;
   readonly main: VTunnelMainModule;
+  readonly stats: VTunnelStatsModule;
   readonly text: VTunnelTextModule;
   readonly app: VTunnelAppModule;
   readonly android: VTunnelAndroidModule;
@@ -1083,6 +1129,12 @@ export type DTunnelMainModule = VTunnelMainModule;
 export declare const DTunnelMainModule: typeof VTunnelMainModule;
 export type DTunnelTextModule = VTunnelTextModule;
 export declare const DTunnelTextModule: typeof VTunnelTextModule;
+export type DTunnelStatsBatteryPoint = VTunnelStatsBatteryPoint;
+export type DTunnelStatsBatterySnapshot = VTunnelStatsBatterySnapshot;
+export type DTunnelStatsVpnSnapshot = VTunnelStatsVpnSnapshot;
+export type DTunnelStatsSnapshot = VTunnelStatsSnapshot;
+export type DTunnelStatsModule = VTunnelStatsModule;
+export declare const DTunnelStatsModule: typeof VTunnelStatsModule;
 export type DTunnelAppModule = VTunnelAppModule;
 export declare const DTunnelAppModule: typeof VTunnelAppModule;
 export type DTunnelAndroidModule = VTunnelAndroidModule;
@@ -1210,4 +1262,3 @@ export declare class DTunnelSDK {
 }
 
 export default VTunnelSDK;
-

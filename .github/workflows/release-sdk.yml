@@ -29,7 +29,14 @@ jobs:
           cp sdk/dtunnel-sdk.simulator.js dist/release/
           cp sdk/dtunnel-sdk.simulator.mjs dist/release/
           cp sdk/dtunnel-sdk.simulator.d.ts dist/release/
-          cp sdk/README.md dist/release/
+          cp sdk/vtunnel-sdk.js dist/release/
+          cp sdk/vtunnel-sdk.mjs dist/release/
+          cp sdk/vtunnel-sdk.d.ts dist/release/
+          cp sdk/vtunnel-sdk.simulator.js dist/release/
+          cp sdk/vtunnel-sdk.simulator.mjs dist/release/
+          cp sdk/vtunnel-sdk.simulator.d.ts dist/release/
+          cp README.md dist/release/vtunnel-sdk-README.md
+          cp sdk/README.md dist/release/dtunnel-sdk-README.md
 
           (
             cd dist/release
@@ -40,10 +47,24 @@ jobs:
               dtunnel-sdk.simulator.js \
               dtunnel-sdk.simulator.mjs \
               dtunnel-sdk.simulator.d.ts \
-              README.md
+              dtunnel-sdk-README.md
           )
 
           shasum -a 256 "dist/release/dtunnel-sdk-${VERSION}.zip" > "dist/release/dtunnel-sdk-${VERSION}.zip.sha256"
+
+          (
+            cd dist/release
+            zip -q "vtunnel-sdk-${VERSION}.zip" \
+              vtunnel-sdk.js \
+              vtunnel-sdk.mjs \
+              vtunnel-sdk.d.ts \
+              vtunnel-sdk.simulator.js \
+              vtunnel-sdk.simulator.mjs \
+              vtunnel-sdk.simulator.d.ts \
+              vtunnel-sdk-README.md
+          )
+
+          shasum -a 256 "dist/release/vtunnel-sdk-${VERSION}.zip" > "dist/release/vtunnel-sdk-${VERSION}.zip.sha256"
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
@@ -57,6 +78,13 @@ jobs:
             dist/release/dtunnel-sdk.simulator.js
             dist/release/dtunnel-sdk.simulator.mjs
             dist/release/dtunnel-sdk.simulator.d.ts
-            dist/release/README.md
+            dist/release/vtunnel-sdk.js
+            dist/release/vtunnel-sdk.mjs
+            dist/release/vtunnel-sdk.d.ts
+            dist/release/vtunnel-sdk.simulator.js
+            dist/release/vtunnel-sdk.simulator.mjs
+            dist/release/vtunnel-sdk.simulator.d.ts
+            dist/release/vtunnel-sdk-README.md
+            dist/release/dtunnel-sdk-README.md
             dist/release/*.zip
             dist/release/*.sha256

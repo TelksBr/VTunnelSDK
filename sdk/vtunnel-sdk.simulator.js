@@ -75,6 +75,7 @@
     'VtGetHotSpotInfo',
     'VtGetNetworkDownloadBytes',
     'VtGetNetworkUploadBytes',
+    'VtGetStatsSnapshot',
     'VtAppVersion',
     'VtActionHandler',
     'VtCloseApp',
@@ -441,6 +442,29 @@
       },
       networkDownloadBytes: 0,
       networkUploadBytes: 0,
+      statsSnapshot: {
+        capturedAtMs: 0,
+        vpn: {
+          connected: false,
+          sessions: 0,
+          totalConnectedMs: 0,
+          sessionDurationMs: 0,
+          appUidRxBytesThisSession: null,
+          appUidTxBytesThisSession: null,
+          appUidRxBytesTotal: 0,
+          appUidTxBytesTotal: 0,
+        },
+        battery: {
+          currentLevelPercent: null,
+          currentChargeRemainingMah: null,
+          usedLevelPercent24h: null,
+          netChargeChangeMah24h: null,
+          coverageMs: 0,
+          history: [],
+          foregroundCpuMs24h: 0,
+          backgroundCpuMs24h: 0,
+        },
+      },
       appVersion: 'vtunnel-1.0.0',
       lastExternalUrl: null,
       lastAction: null,
@@ -978,6 +1002,7 @@
     registerBridgePair('VtGetHotSpotInfo', createExecuteBridgeObject('VtGetHotSpotInfo', () => JSON.stringify(state.hotSpotInfo || {})));
     registerBridgePair('VtGetNetworkDownloadBytes', createExecuteBridgeObject('VtGetNetworkDownloadBytes', () => state.networkDownloadBytes));
     registerBridgePair('VtGetNetworkUploadBytes', createExecuteBridgeObject('VtGetNetworkUploadBytes', () => state.networkUploadBytes));
+    registerBridgePair('VtGetStatsSnapshot', createExecuteBridgeObject('VtGetStatsSnapshot', () => JSON.stringify(state.statsSnapshot)));
     registerBridgePair('VtAppVersion', createExecuteBridgeObject('VtAppVersion', () => state.appVersion));
 
     registerBridgePair('VtActionHandler', createExecuteBridgeObject('VtActionHandler', (action) => {

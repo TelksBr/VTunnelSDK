@@ -69,8 +69,10 @@
     'VtStartHotSpotService',
     'VtStopHotSpotService',
     'VtGetStatusHotSpotService',
+    'VtGetHotSpotInfo',
     'VtGetNetworkDownloadBytes',
     'VtGetNetworkUploadBytes',
+    'VtGetStatsSnapshot',
     'VtAppVersion',
     'VtActionHandler',
     'VtCloseApp',
@@ -85,6 +87,8 @@
     'VtIsSafeMode',
     'VtCustomDns',
     'VtShowCustomDnsDialog',
+    'VtPlayUpdate',
+    'VtConfigImport',
   ]);
 
   const DT_BRIDGE_OBJECTS = Object.freeze(
@@ -170,9 +174,21 @@
       callbacks: ['VtHotSpotStateEvent', 'vtHotSpotStateListener', 'DtHotSpotStateEvent', 'dtHotSpotStateListener'],
       parseAsJson: false,
     },
+    hotSpotInfo: {
+      callbacks: ['VtHotSpotInfoEvent', 'vtHotSpotInfoListener', 'DtHotSpotInfoEvent', 'dtHotSpotInfoListener'],
+      parseAsJson: true,
+    },
     reloadRequest: {
       callbacks: ['VtReloadRequestEvent', 'vtReloadRequestListener', 'DtReloadRequestEvent', 'dtReloadRequestListener'],
       parseAsJson: false,
+    },
+    playUpdateState: {
+      callbacks: ['VtPlayUpdateStateEvent', 'vtPlayUpdateStateListener', 'DtPlayUpdateStateEvent', 'dtPlayUpdateStateListener'],
+      parseAsJson: true,
+    },
+    configImport: {
+      callbacks: ['VtConfigImportEvent', 'vtConfigImportListener', 'DtConfigImportEvent', 'dtConfigImportListener'],
+      parseAsJson: true,
     },
   });
 
@@ -649,6 +665,13 @@
     }
   }
 
+  class StatsModule extends ModuleBase {
+    /** Returns battery, CPU, and VPN-session metrics collected by the native app. */
+    getSnapshot() {
+      return this.callJson('VtGetStatsSnapshot', 'execute');
+    }
+  }
+
   class AppModule extends ModuleBase {
     cleanApp() {
       this.callVoid('VtCleanApp', 'execute');
@@ -716,6 +739,9 @@
     getHotSpotStatus() {
       return this.call('VtGetStatusHotSpotService', 'execute');
     }
+    getHotSpotInfo() {
+      return this.callJson('VtGetHotSpotInfo', 'execute');
+    }
     isHotSpotRunning() {
       return this.getHotSpotStatus() === 'RUNNING';
     }
@@ -773,9 +799,19 @@
     setEnabled(enabled) {
       this.callVoid('VtCustomDns', 'setEnabled', [Boolean(enabled)]);
     }
-    set(enabledOrConfig, primary, secondary) {
+    set(enabledOrConfig, primary, secondary, primaryIpv6, secondaryIpv6) {
       if (typeof enabledOrConfig === 'object' && enabledOrConfig !== null) {
         this.callVoid('VtCustomDns', 'set', [JSON.stringify(enabledOrConfig)]);
+        return;
+      }
+      if (primaryIpv6 !== undefined || secondaryIpv6 !== undefined) {
+        this.callVoid('VtCustomDns', 'set', [
+          Boolean(enabledOrConfig),
+          String(primary || ''),
+          String(secondary || ''),
+          String(primaryIpv6 || ''),
+          String(secondaryIpv6 || ''),
+        ]);
         return;
       }
       this.callVoid('VtCustomDns', 'set', [
@@ -784,9 +820,23 @@
         String(secondary || ''),
       ]);
     }
-    save(enabled, primary, secondary) {
+    save(enabledOrConfig, primary, secondary, primaryIpv6, secondaryIpv6) {
+      if (typeof enabledOrConfig === 'object' && enabledOrConfig !== null) {
+        this.set(enabledOrConfig);
+        return;
+      }
+      if (primaryIpv6 !== undefined || secondaryIpv6 !== undefined) {
+        this.callVoid('VtCustomDns', 'save', [
+          Boolean(enabledOrConfig),
+          String(primary || ''),
+          String(secondary || ''),
+          String(primaryIpv6 || ''),
+          String(secondaryIpv6 || ''),
+        ]);
+        return;
+      }
       this.callVoid('VtCustomDns', 'save', [
-        Boolean(enabled),
+        Boolean(enabledOrConfig),
         String(primary || ''),
         String(secondary || ''),
       ]);
@@ -796,6 +846,40 @@
     }
     showDialog() {
       this.callVoid('VtShowCustomDnsDialog', 'execute');
+    }
+  }
+
+  class PlayUpdateModule extends ModuleBase {
+    getState() {
+      return this.callJson('VtPlayUpdate', 'getState');
+    }
+    check() {
+      this.callVoid('VtPlayUpdate', 'check');
+    }
+    start(type) {
+      this.callVoid('VtPlayUpdate', 'start', [type === 'IMMEDIATE' ? 'IMMEDIATE' : 'FLEXIBLE']);
+    }
+    complete() {
+      this.callVoid('VtPlayUpdate', 'complete');
+    }
+    isDownloaded() {
+      const state = this.getState();
+      return Boolean(state && state.status === 'downloaded');
+    }
+  }
+
+  class ConfigImportModule extends ModuleBase {
+    getPending() {
+      return this.callJson('VtConfigImport', 'getPending');
+    }
+    hasPending() {
+      return Boolean(this.getPending());
+    }
+    confirm() {
+      this.callVoid('VtConfigImport', 'confirm');
+    }
+    reject() {
+      this.callVoid('VtConfigImport', 'reject');
     }
   }
 
@@ -824,10 +908,13 @@
 
       this.config = new ConfigModule(this.gateway);
       this.main = new MainModule(this.gateway);
+      this.stats = new StatsModule(this.gateway);
       this.text = new TextModule(this.gateway);
       this.app = new AppModule(this.gateway);
       this.android = new AndroidModule(this.gateway);
       this.dns = new DnsModule(this.gateway);
+      this.playUpdate = new PlayUpdateModule(this.gateway);
+      this.configImport = new ConfigImportModule(this.gateway);
 
       if (this.autoRegisterNativeEvents) {
         this.registerNativeEventHandlers();
@@ -929,7 +1016,7 @@
 
   const DTunnelSDK = VTunnelSDK;
 
-  VTunnelSDK.VERSION = '2.0.0';
+  VTunnelSDK.VERSION = '2.10.0';
   VTunnelSDK.BRIDGE_OBJECTS = BRIDGE_OBJECTS;
   VTunnelSDK.VT_BRIDGE_OBJECTS = VT_BRIDGE_OBJECTS;
   VTunnelSDK.DT_BRIDGE_OBJECTS = DT_BRIDGE_OBJECTS;

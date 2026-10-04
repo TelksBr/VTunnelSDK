@@ -10,14 +10,19 @@ import type {
   VTunnelCheckUserResult,
   VTunnelDefaultConfig,
   VTunnelHotSpotStatus,
+  VTunnelHotSpotInfo,
   VTunnelMessage,
   VTunnelNetworkData,
   VTunnelNotification,
   VTunnelPendingImport,
   VTunnelSemanticEventName,
+  VTunnelStatsSnapshot,
   VTunnelVPNState,
   VTunnelCustomDnsConfig,
   VTunnelDnsPreset,
+  VTunnelPlayUpdateState,
+  VTunnelConfigImportItem,
+  VTunnelConfigImportState,
 } from './vtunnel-sdk.js';
 
 export interface VTunnelSDKSimulatorState {
@@ -62,8 +67,10 @@ export interface VTunnelSDKSimulatorState {
   navigationBarHeight: number;
   hotSpotStatus: VTunnelHotSpotStatus;
   hotSpotPort: number | null;
+  hotSpotInfo: VTunnelHotSpotInfo;
   networkDownloadBytes: number;
   networkUploadBytes: number;
+  statsSnapshot: VTunnelStatsSnapshot;
   appVersion: string;
   lastExternalUrl: string | null;
   lastAction: VTunnelAction | (string & {}) | null;
@@ -73,6 +80,9 @@ export interface VTunnelSDKSimulatorState {
   customDns: VTunnelCustomDnsConfig;
   dnsPresets: VTunnelDnsPreset[];
   lastCustomDnsDialogShown?: boolean;
+  playUpdate: VTunnelPlayUpdateState;
+  /** Pending offline import (status "pending"), or null. */
+  configImport: VTunnelConfigImportState | null;
 }
 
 export type VTunnelSDKSimulatorStatePatch = {
@@ -150,6 +160,12 @@ export interface VTunnelSDKSimulatorController {
   ): boolean;
 
   getBridgeObject(objectName: VTunnelBridgeObjectName | (string & {})): unknown;
+
+  /** Simulates a vt:// link or clipboard payload arriving (emits configImport "pending"). */
+  simulateConfigImport(
+    configs?: Array<Partial<Omit<VTunnelConfigImportItem, 'id'>>>,
+    source?: 'deeplink' | 'clipboard',
+  ): this;
 }
 
 export interface VTunnelSDKSimulatorAPI {

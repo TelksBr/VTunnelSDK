@@ -60,6 +60,7 @@ Depois disso:
 
 - `sdk.config`
 - `sdk.main`
+- `sdk.stats` (bateria, CPU do app e métricas da sessão VPN)
 - `sdk.text`
 - `sdk.app`
 - `sdk.android`
@@ -80,6 +81,8 @@ Use `sdk.on('<evento>', handler)` com:
 - `showSuccessToast`
 - `showErrorToast`
 - `notification`
+
+`sdk.stats.getSnapshot()` retorna um snapshot local de bateria, CPU e sessão VPN. O uso de bateria em mAh é uma variação líquida do dispositivo; os bytes da sessão são contabilizados para o UID do VTunnel, sem somar o payload dos outros apps roteados pela VPN.
 
 ## Erros
 

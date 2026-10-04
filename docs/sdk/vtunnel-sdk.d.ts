@@ -18,7 +18,10 @@ export type VTunnelSemanticEventName =
   | 'checkingAppUpdate'
   | 'airplaneState'
   | 'hotSpotState'
-  | 'reloadRequest';
+  | 'hotSpotInfo'
+  | 'reloadRequest'
+  | 'playUpdateState'
+  | 'configImport';
 
 export type VTunnelCallbackName =
   | 'VtVpnStateEvent'
@@ -40,7 +43,10 @@ export type VTunnelCallbackName =
   | 'VtCheckingAppUpdateEvent'
   | 'VtAirplaneStateEvent'
   | 'VtHotSpotStateEvent'
+  | 'VtHotSpotInfoEvent'
   | 'VtReloadRequestEvent'
+  | 'VtPlayUpdateStateEvent'
+  | 'VtConfigImportEvent'
   | 'vtVpnStateListener'
   | 'vtVpnStartedSuccessListener'
   | 'vtVpnStoppedSuccessListener'
@@ -59,7 +65,10 @@ export type VTunnelCallbackName =
   | 'vtCheckingAppUpdateListener'
   | 'vtAirplaneStateListener'
   | 'vtHotSpotStateListener'
+  | 'vtHotSpotInfoListener'
   | 'vtReloadRequestListener'
+  | 'vtPlayUpdateStateListener'
+  | 'vtConfigImportListener'
   | 'DtVpnStateEvent'
   | 'DtVpnStartedSuccessEvent'
   | 'DtVpnStoppedSuccessEvent'
@@ -79,7 +88,10 @@ export type VTunnelCallbackName =
   | 'DtCheckingAppUpdateEvent'
   | 'DtAirplaneStateEvent'
   | 'DtHotSpotStateEvent'
+  | 'DtHotSpotInfoEvent'
   | 'DtReloadRequestEvent'
+  | 'DtPlayUpdateStateEvent'
+  | 'DtConfigImportEvent'
   | 'dtVpnStateListener'
   | 'dtVpnStartedSuccessListener'
   | 'dtVpnStoppedSuccessListener'
@@ -98,7 +110,10 @@ export type VTunnelCallbackName =
   | 'dtCheckingAppUpdateListener'
   | 'dtAirplaneStateListener'
   | 'dtHotSpotStateListener'
-  | 'dtReloadRequestListener';
+  | 'dtHotSpotInfoListener'
+  | 'dtReloadRequestListener'
+  | 'dtPlayUpdateStateListener'
+  | 'dtConfigImportListener';
 
 export type DTunnelBridgeObjectName =
   | 'DtSetConfig'
@@ -168,8 +183,10 @@ export type DTunnelBridgeObjectName =
   | 'DtStartHotSpotService'
   | 'DtStopHotSpotService'
   | 'DtGetStatusHotSpotService'
+  | 'DtGetHotSpotInfo'
   | 'DtGetNetworkDownloadBytes'
   | 'DtGetNetworkUploadBytes'
+  | 'DtGetStatsSnapshot'
   | 'DtAppVersion'
   | 'DtActionHandler'
   | 'DtCloseApp'
@@ -183,7 +200,9 @@ export type DTunnelBridgeObjectName =
   | 'DtCopyDiagnosticReport'
   | 'DtIsSafeMode'
   | 'DtCustomDns'
-  | 'DtShowCustomDnsDialog';
+  | 'DtShowCustomDnsDialog'
+  | 'DtPlayUpdate'
+  | 'DtConfigImport';
 
 export type VTOnlyBridgeObjectName =
   | 'VtSetConfig'
@@ -253,8 +272,10 @@ export type VTOnlyBridgeObjectName =
   | 'VtStartHotSpotService'
   | 'VtStopHotSpotService'
   | 'VtGetStatusHotSpotService'
+  | 'VtGetHotSpotInfo'
   | 'VtGetNetworkDownloadBytes'
   | 'VtGetNetworkUploadBytes'
+  | 'VtGetStatsSnapshot'
   | 'VtAppVersion'
   | 'VtActionHandler'
   | 'VtCloseApp'
@@ -268,7 +289,9 @@ export type VTOnlyBridgeObjectName =
   | 'VtCopyDiagnosticReport'
   | 'VtIsSafeMode'
   | 'VtCustomDns'
-  | 'VtShowCustomDnsDialog';
+  | 'VtShowCustomDnsDialog'
+  | 'VtPlayUpdate'
+  | 'VtConfigImport';
 
 export type VTunnelBridgeObjectName = VTOnlyBridgeObjectName | DTunnelBridgeObjectName;
 
@@ -283,7 +306,76 @@ export type VTunnelVPNState =
 
 export type VTunnelAirplaneState = 'ACTIVE' | 'INACTIVE' | 'ACTIVATING' | 'DEACTIVATING';
 export type VTunnelAssistantState = 'ENABLED' | 'DISABLED';
-export type VTunnelHotSpotStatus = 'RUNNING' | 'STOPPED';
+export type VTunnelHotSpotStatus = 'RUNNING' | 'STOPPED' | 'STARTING' | 'STOPPING';
+
+export interface VTunnelHotSpotInfo {
+  state: VTunnelHotSpotStatus | string;
+  running: boolean;
+  ip: string;
+  httpPort: number;
+  socksPort: number;
+  socksUdpPort?: number;
+  udpSupported?: boolean;
+  httpProxy: string;
+  socksProxy: string;
+  socksUdpProxy?: string;
+  pacUrl: string;
+  helpUrl: string;
+  /** WhatsApp built-in proxy (raw TCP) chat port; 0 when stopped or the port could not be opened. */
+  whatsappChatPort?: number;
+  /** WhatsApp built-in proxy media port; 0 when stopped or the port could not be opened. */
+  whatsappMediaPort?: number;
+  /** Host to type in WhatsApp → Proxy; empty when the WhatsApp proxy is not running. */
+  whatsappProxy?: string;
+}
+
+export type VTunnelPlayUpdateStatus =
+  | 'idle'
+  | 'none'
+  | 'unavailable'
+  | 'available'
+  | 'downloading'
+  | 'downloaded'
+  | 'installing'
+  | 'installed'
+  | 'canceled'
+  | 'failed';
+
+export type VTunnelPlayUpdateType = 'FLEXIBLE' | 'IMMEDIATE';
+
+export interface VTunnelPlayUpdateState {
+  status: VTunnelPlayUpdateStatus;
+  /** Panel APP_PLAY_UPDATE_MODE: OFF, FLEXIBLE or IMMEDIATE. */
+  mode: 'OFF' | VTunnelPlayUpdateType | string;
+  /** false when the panel disabled the native "update ready" dialog. */
+  nativePrompt: boolean;
+  availableVersionCode: number;
+  /** Days since Play learned about the update; -1 when unknown. */
+  stalenessDays: number;
+  flexibleAllowed: boolean;
+  immediateAllowed: boolean;
+  bytesDownloaded: number;
+  totalBytesToDownload: number;
+}
+
+export type VTunnelConfigImportStatus = 'pending' | 'imported' | 'rejected' | 'failed';
+
+export type VTunnelConfigImportSource = 'deeplink' | 'clipboard';
+
+export interface VTunnelConfigImportItem {
+  /** Present only after the import (status "imported"). */
+  id?: number;
+  name: string;
+  description: string | null;
+  mode: string;
+}
+
+export interface VTunnelConfigImportState {
+  status: VTunnelConfigImportStatus;
+  source: VTunnelConfigImportSource | string | null;
+  count: number;
+  configs: VTunnelConfigImportItem[];
+}
 
 export type VTunnelAction =
   | 'CDN_UPDATE'
@@ -442,7 +534,10 @@ export interface VTunnelEventPayloadMap {
   checkingAppUpdate: boolean | string | null;
   airplaneState: VTunnelAirplaneState | string | null;
   hotSpotState: VTunnelHotSpotStatus | string | null;
+  hotSpotInfo: VTunnelParsedJson<VTunnelHotSpotInfo>;
   reloadRequest: string | null;
+  playUpdateState: VTunnelParsedJson<VTunnelPlayUpdateState>;
+  configImport: VTunnelParsedJson<VTunnelConfigImportState>;
 }
 
 export interface VTunnelEventRawPayloadMap {
@@ -465,7 +560,10 @@ export interface VTunnelEventRawPayloadMap {
   checkingAppUpdate: boolean | string | null;
   airplaneState: string | null;
   hotSpotState: string | null;
+  hotSpotInfo: string | null;
   reloadRequest: string | null;
+  playUpdateState: string | null;
+  configImport: string | null;
 }
 
 export interface VTunnelEventCallbackMap {
@@ -488,7 +586,10 @@ export interface VTunnelEventCallbackMap {
   checkingAppUpdate: 'VtCheckingAppUpdateEvent';
   airplaneState: 'VtAirplaneStateEvent';
   hotSpotState: 'VtHotSpotStateEvent';
+  hotSpotInfo: 'VtHotSpotInfoEvent';
   reloadRequest: 'VtReloadRequestEvent';
+  playUpdateState: 'VtPlayUpdateStateEvent';
+  configImport: 'VtConfigImportEvent';
 }
 
 export interface DTunnelEventCallbackMap {
@@ -511,7 +612,10 @@ export interface DTunnelEventCallbackMap {
   checkingAppUpdate: 'DtCheckingAppUpdateEvent';
   airplaneState: 'DtAirplaneStateEvent';
   hotSpotState: 'DtHotSpotStateEvent';
+  hotSpotInfo: 'DtHotSpotInfoEvent';
   reloadRequest: 'DtReloadRequestEvent';
+  playUpdateState: 'DtPlayUpdateStateEvent';
+  configImport: 'DtConfigImportEvent';
 }
 
 export interface VTunnelCallbackToEventMap {
@@ -589,10 +693,22 @@ export interface VTunnelCallbackToEventMap {
   vtHotSpotStateListener: 'hotSpotState';
   DtHotSpotStateEvent: 'hotSpotState';
   dtHotSpotStateListener: 'hotSpotState';
+  VtHotSpotInfoEvent: 'hotSpotInfo';
+  vtHotSpotInfoListener: 'hotSpotInfo';
+  DtHotSpotInfoEvent: 'hotSpotInfo';
+  dtHotSpotInfoListener: 'hotSpotInfo';
   VtReloadRequestEvent: 'reloadRequest';
   vtReloadRequestListener: 'reloadRequest';
   DtReloadRequestEvent: 'reloadRequest';
   dtReloadRequestListener: 'reloadRequest';
+  VtPlayUpdateStateEvent: 'playUpdateState';
+  vtPlayUpdateStateListener: 'playUpdateState';
+  DtPlayUpdateStateEvent: 'playUpdateState';
+  dtPlayUpdateStateListener: 'playUpdateState';
+  VtConfigImportEvent: 'configImport';
+  vtConfigImportListener: 'configImport';
+  DtConfigImportEvent: 'configImport';
+  dtConfigImportListener: 'configImport';
 }
 
 export interface VTunnelSemanticEventEnvelope<E extends VTunnelSemanticEventName = VTunnelSemanticEventName> {
@@ -735,6 +851,49 @@ export declare class VTunnelTextModule {
   translate(label: string | null): string | null;
 }
 
+export interface VTunnelStatsBatteryPoint {
+  timeMs: number;
+  levelPercent: number | null;
+  chargeRemainingMah: number | null;
+}
+
+export interface VTunnelStatsBatterySnapshot {
+  currentLevelPercent: number | null;
+  currentChargeRemainingMah: number | null;
+  /** Net device battery-level change across available samples, not VTunnel-attributed drain. */
+  usedLevelPercent24h: number | null;
+  /** Net device charge-counter change across available samples, not VTunnel-attributed drain. */
+  netChargeChangeMah24h: number | null;
+  coverageMs: number;
+  history: VTunnelStatsBatteryPoint[];
+  foregroundCpuMs24h: number;
+  backgroundCpuMs24h: number;
+}
+
+export interface VTunnelStatsVpnSnapshot {
+  connected: boolean;
+  sessions: number;
+  totalConnectedMs: number;
+  sessionDurationMs: number;
+  /** Network bytes accounted to the VTunnel app UID; does not include other apps' tunneled payload. */
+  appUidRxBytesThisSession: number | null;
+  /** Network bytes accounted to the VTunnel app UID; does not include other apps' tunneled payload. */
+  appUidTxBytesThisSession: number | null;
+  appUidRxBytesTotal: number;
+  appUidTxBytesTotal: number;
+}
+
+export interface VTunnelStatsSnapshot {
+  capturedAtMs: number;
+  vpn: VTunnelStatsVpnSnapshot;
+  battery: VTunnelStatsBatterySnapshot;
+}
+
+export declare class VTunnelStatsModule {
+  /** Reads a local snapshot; battery and CPU histories are sampled while the app is visible or VPN is connected. */
+  getSnapshot(): VTunnelStatsSnapshot | null;
+}
+
 export declare class VTunnelAppModule {
   cleanApp(): void;
   goToVoiceInputSettings(): void;
@@ -760,6 +919,7 @@ export declare class VTunnelAndroidModule {
   startHotSpotService(port?: number): void;
   stopHotSpotService(): void;
   getHotSpotStatus(): VTunnelHotSpotStatus | null;
+  getHotSpotInfo(): VTunnelHotSpotInfo | null;
   isHotSpotRunning(): boolean;
   getNetworkDownloadBytes(): number | null;
   getNetworkUploadBytes(): number | null;
@@ -789,6 +949,33 @@ export declare class VTunnelDnsModule {
   showDialog(): void;
 }
 
+/** Google Play In-App Updates (only for apps installed from Play). */
+export declare class VTunnelPlayUpdateModule {
+  getState(): VTunnelPlayUpdateState | null;
+  /** Asks Play again; the result arrives through the `playUpdateState` event. */
+  check(): void;
+  /** Opens the Play update flow. Defaults to FLEXIBLE. */
+  start(type?: VTunnelPlayUpdateType): void;
+  /** Installs a downloaded FLEXIBLE update (the app restarts). */
+  complete(): void;
+  isDownloaded(): boolean;
+}
+
+/**
+ * Offline config import (vt:// / vtunnel:// / dt:// deep links and clipboard).
+ * With APP_CONFIG_IMPORT_NATIVE_PROMPT=false the app skips its dialog and emits
+ * `configImport` with status "pending"; call confirm() or reject().
+ */
+export declare class VTunnelConfigImportModule {
+  /** Preview of the pending import (not imported yet), or null. */
+  getPending(): VTunnelConfigImportState | null;
+  hasPending(): boolean;
+  /** Imports the pending payload; the result arrives through the `configImport` event. */
+  confirm(): void;
+  /** Discards the pending payload. */
+  reject(): void;
+}
+
 export declare class VTunnelSDK {
   static VERSION: string;
   static BRIDGE_OBJECTS: readonly VTunnelBridgeObjectName[];
@@ -811,10 +998,13 @@ export declare class VTunnelSDK {
 
   readonly config: VTunnelConfigModule;
   readonly main: VTunnelMainModule;
+  readonly stats: VTunnelStatsModule;
   readonly text: VTunnelTextModule;
   readonly app: VTunnelAppModule;
   readonly android: VTunnelAndroidModule;
   readonly dns: VTunnelDnsModule;
+  readonly playUpdate: VTunnelPlayUpdateModule;
+  readonly configImport: VTunnelConfigImportModule;
 
   constructor(options?: VTunnelSDKOptions);
 
@@ -903,6 +1093,7 @@ export type DTunnelVPNState = VTunnelVPNState;
 export type DTunnelAirplaneState = VTunnelAirplaneState;
 export type DTunnelAssistantState = VTunnelAssistantState;
 export type DTunnelHotSpotStatus = VTunnelHotSpotStatus;
+export type DTunnelHotSpotInfo = VTunnelHotSpotInfo;
 export type DTunnelAction = VTunnelAction;
 export type DTunnelNotification = VTunnelNotification;
 export type DTunnelMessage = VTunnelMessage;
@@ -938,6 +1129,12 @@ export type DTunnelMainModule = VTunnelMainModule;
 export declare const DTunnelMainModule: typeof VTunnelMainModule;
 export type DTunnelTextModule = VTunnelTextModule;
 export declare const DTunnelTextModule: typeof VTunnelTextModule;
+export type DTunnelStatsBatteryPoint = VTunnelStatsBatteryPoint;
+export type DTunnelStatsBatterySnapshot = VTunnelStatsBatterySnapshot;
+export type DTunnelStatsVpnSnapshot = VTunnelStatsVpnSnapshot;
+export type DTunnelStatsSnapshot = VTunnelStatsSnapshot;
+export type DTunnelStatsModule = VTunnelStatsModule;
+export declare const DTunnelStatsModule: typeof VTunnelStatsModule;
 export type DTunnelAppModule = VTunnelAppModule;
 export declare const DTunnelAppModule: typeof VTunnelAppModule;
 export type DTunnelAndroidModule = VTunnelAndroidModule;
@@ -946,6 +1143,17 @@ export type DTunnelCustomDnsConfig = VTunnelCustomDnsConfig;
 export type DTunnelDnsPreset = VTunnelDnsPreset;
 export type DTunnelDnsModule = VTunnelDnsModule;
 export declare const DTunnelDnsModule: typeof VTunnelDnsModule;
+export type DTunnelPlayUpdateStatus = VTunnelPlayUpdateStatus;
+export type DTunnelPlayUpdateType = VTunnelPlayUpdateType;
+export type DTunnelPlayUpdateState = VTunnelPlayUpdateState;
+export type DTunnelPlayUpdateModule = VTunnelPlayUpdateModule;
+export declare const DTunnelPlayUpdateModule: typeof VTunnelPlayUpdateModule;
+export type DTunnelConfigImportStatus = VTunnelConfigImportStatus;
+export type DTunnelConfigImportSource = VTunnelConfigImportSource;
+export type DTunnelConfigImportItem = VTunnelConfigImportItem;
+export type DTunnelConfigImportState = VTunnelConfigImportState;
+export type DTunnelConfigImportModule = VTunnelConfigImportModule;
+export declare const DTunnelConfigImportModule: typeof VTunnelConfigImportModule;
 
 export declare class DTunnelSDK {
   static VERSION: string;
@@ -970,6 +1178,8 @@ export declare class DTunnelSDK {
   readonly app: DTunnelAppModule;
   readonly android: DTunnelAndroidModule;
   readonly dns: DTunnelDnsModule;
+  readonly playUpdate: DTunnelPlayUpdateModule;
+  readonly configImport: DTunnelConfigImportModule;
 
   constructor(options?: DTunnelSDKOptions);
 
@@ -1052,4 +1262,3 @@ export declare class DTunnelSDK {
 }
 
 export default VTunnelSDK;
-

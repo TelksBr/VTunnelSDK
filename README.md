@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![NPM Version](https://img.shields.io/badge/version-2.1.0-blue.svg?style=for-the-badge)](https://github.com/TelksBr/VTunnelSDK)
+[![NPM Version](https://img.shields.io/badge/version-2.10.0-blue.svg?style=for-the-badge)](https://github.com/TelksBr/VTunnelSDK)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178c6.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React Supported](https://img.shields.io/badge/React-18%2B-61dafb.svg?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
@@ -132,11 +132,25 @@ sdk.main.stopVpn();
 | Módulo | Acesso | Descrição Principal |
 | :--- | :--- | :--- |
 | **VPN & Conexão** | `sdk.main` | Iniciar/parar VPN, status da conexão, anúncios, logs e diagnóstico |
+| **Estatísticas** | `sdk.stats` | Snapshot local de bateria, CPU e tráfego contabilizado para o UID do VTunnel |
 | **Configurações** | `sdk.config` | Categorias, servidores, seleção de config, importação offline |
 | **Custom DNS** | `sdk.dns` | Gerenciamento de servidores DNS do cliente (IPv4/IPv6) e presets |
 | **Android & Sistema** | `sdk.android` | Insets de barra de status/navegação, notificações, hotspot, clipboard |
 | **App & Telas** | `sdk.app` | Configurações do app, abertura de telas de configurações do sistema |
 | **Texto & Tradução** | `sdk.text` | Tradução de labels nativas com base no idioma do aplicativo |
+
+### Estatísticas do dispositivo e da VPN (`sdk.stats`)
+
+`getSnapshot()` retorna os dados locais coletados pelo app. A bateria e o histórico de CPU são amostrados enquanto o app está visível ou a VPN está conectada. Os campos de mAh são a variação líquida observada no dispositivo, não uma atribuição exclusiva ao VTunnel. Os bytes de rede representam o UID do app e não somam o payload atribuído aos outros aplicativos pelo Android.
+
+```ts
+const snapshot = sdk.stats.getSnapshot();
+if (snapshot) {
+  console.log(snapshot.battery.currentLevelPercent);
+  console.log(snapshot.battery.history);
+  console.log(snapshot.vpn.appUidRxBytesThisSession);
+}
+```
 
 ---
 

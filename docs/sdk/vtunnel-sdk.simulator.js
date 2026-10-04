@@ -72,8 +72,10 @@
     'VtStartHotSpotService',
     'VtStopHotSpotService',
     'VtGetStatusHotSpotService',
+    'VtGetHotSpotInfo',
     'VtGetNetworkDownloadBytes',
     'VtGetNetworkUploadBytes',
+    'VtGetStatsSnapshot',
     'VtAppVersion',
     'VtActionHandler',
     'VtCloseApp',
@@ -88,6 +90,8 @@
     'VtIsSafeMode',
     'VtCustomDns',
     'VtShowCustomDnsDialog',
+    'VtPlayUpdate',
+    'VtConfigImport',
   ]);
 
   const DT_BRIDGE_OBJECT_NAMES = Object.freeze(
@@ -118,7 +122,10 @@
     'VtCheckingAppUpdateEvent',
     'VtAirplaneStateEvent',
     'VtHotSpotStateEvent',
+    'VtHotSpotInfoEvent',
     'VtReloadRequestEvent',
+    'VtPlayUpdateStateEvent',
+    'VtConfigImportEvent',
     'vtVpnStateListener',
     'vtVpnStartedSuccessListener',
     'vtVpnStoppedSuccessListener',
@@ -137,7 +144,10 @@
     'vtCheckingAppUpdateListener',
     'vtAirplaneStateListener',
     'vtHotSpotStateListener',
+    'vtHotSpotInfoListener',
     'vtReloadRequestListener',
+    'vtPlayUpdateStateListener',
+    'vtConfigImportListener',
     'DtVpnStateEvent',
     'DtVpnStartedSuccessEvent',
     'DtVpnStoppedSuccessEvent',
@@ -157,7 +167,10 @@
     'DtCheckingAppUpdateEvent',
     'DtAirplaneStateEvent',
     'DtHotSpotStateEvent',
+    'DtHotSpotInfoEvent',
     'DtReloadRequestEvent',
+    'DtPlayUpdateStateEvent',
+    'DtConfigImportEvent',
     'dtVpnStateListener',
     'dtVpnStartedSuccessListener',
     'dtVpnStoppedSuccessListener',
@@ -176,7 +189,10 @@
     'dtCheckingAppUpdateListener',
     'dtAirplaneStateListener',
     'dtHotSpotStateListener',
+    'dtHotSpotInfoListener',
     'dtReloadRequestListener',
+    'dtPlayUpdateStateListener',
+    'dtConfigImportListener',
   ]);
 
   const SEMANTIC_EVENT_TO_CALLBACK = Object.freeze({
@@ -199,13 +215,18 @@
     checkingAppUpdate: 'VtCheckingAppUpdateEvent',
     airplaneState: 'VtAirplaneStateEvent',
     hotSpotState: 'VtHotSpotStateEvent',
+    hotSpotInfo: 'VtHotSpotInfoEvent',
     reloadRequest: 'VtReloadRequestEvent',
+    playUpdateState: 'VtPlayUpdateStateEvent',
+    configImport: 'VtConfigImportEvent',
   });
 
   const JSON_EVENT_NAMES = Object.freeze([
     'checkUserResult',
     'messageError',
     'notification',
+    'playUpdateState',
+    'configImport',
   ]);
 
   function isPlainObject(value) {
@@ -402,8 +423,48 @@
       navigationBarHeight: 0,
       hotSpotStatus: 'STOPPED',
       hotSpotPort: null,
+      hotSpotInfo: {
+        state: 'STOPPED',
+        running: false,
+        ip: '192.168.43.1',
+        httpPort: 8578,
+        socksPort: 8579,
+        socksUdpPort: 8580,
+        udpSupported: false,
+        httpProxy: '192.168.43.1:8578',
+        socksProxy: '192.168.43.1:8579',
+        socksUdpProxy: '192.168.43.1:8580',
+        pacUrl: 'http://192.168.43.1:8578/proxy.pac',
+        helpUrl: 'http://192.168.43.1:8578/',
+        whatsappChatPort: 0,
+        whatsappMediaPort: 0,
+        whatsappProxy: '',
+      },
       networkDownloadBytes: 0,
       networkUploadBytes: 0,
+      statsSnapshot: {
+        capturedAtMs: 0,
+        vpn: {
+          connected: false,
+          sessions: 0,
+          totalConnectedMs: 0,
+          sessionDurationMs: 0,
+          appUidRxBytesThisSession: null,
+          appUidTxBytesThisSession: null,
+          appUidRxBytesTotal: 0,
+          appUidTxBytesTotal: 0,
+        },
+        battery: {
+          currentLevelPercent: null,
+          currentChargeRemainingMah: null,
+          usedLevelPercent24h: null,
+          netChargeChangeMah24h: null,
+          coverageMs: 0,
+          history: [],
+          foregroundCpuMs24h: 0,
+          backgroundCpuMs24h: 0,
+        },
+      },
       appVersion: 'vtunnel-1.0.0',
       lastExternalUrl: null,
       lastAction: null,
@@ -414,16 +475,30 @@
         enabled: false,
         primary: '1.1.1.1',
         secondary: '1.0.0.1',
-        servers: ['1.1.1.1', '1.0.0.1'],
+        primaryIpv6: '2606:4700:4700::1111',
+        secondaryIpv6: '2606:4700:4700::1001',
+        servers: ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001'],
       },
       dnsPresets: [
-        { id: 'cloudflare', name: 'Cloudflare', primary: '1.1.1.1', secondary: '1.0.0.1' },
-        { id: 'google', name: 'Google DNS', primary: '8.8.8.8', secondary: '8.8.4.4' },
-        { id: 'quad9', name: 'Quad9', primary: '9.9.9.9', secondary: '149.112.112.112' },
-        { id: 'adguard', name: 'AdGuard DNS', primary: '94.140.14.14', secondary: '94.140.15.15' },
-        { id: 'opendns', name: 'OpenDNS', primary: '208.67.222.222', secondary: '208.67.220.220' },
+        { id: 'cloudflare', name: 'Cloudflare', primary: '1.1.1.1', secondary: '1.0.0.1', primaryIpv6: '2606:4700:4700::1111', secondaryIpv6: '2606:4700:4700::1001' },
+        { id: 'google', name: 'Google DNS', primary: '8.8.8.8', secondary: '8.8.4.4', primaryIpv6: '2001:4860:4860::8888', secondaryIpv6: '2001:4860:4860::8844' },
+        { id: 'quad9', name: 'Quad9', primary: '9.9.9.9', secondary: '149.112.112.112', primaryIpv6: '2620:fe::fe', secondaryIpv6: '2620:fe::9' },
+        { id: 'adguard', name: 'AdGuard DNS', primary: '94.140.14.14', secondary: '94.140.15.15', primaryIpv6: '2a10:50c0::ad1:ff', secondaryIpv6: '2a10:50c0::ad2:ff' },
+        { id: 'opendns', name: 'OpenDNS', primary: '208.67.222.222', secondary: '208.67.220.220', primaryIpv6: '2620:119:35::35', secondaryIpv6: '2620:119:53::53' },
       ],
       lastCustomDnsDialogShown: false,
+      playUpdate: {
+        status: 'none',
+        mode: 'OFF',
+        nativePrompt: true,
+        availableVersionCode: 0,
+        stalenessDays: -1,
+        flexibleAllowed: false,
+        immediateAllowed: false,
+        bytesDownloaded: 0,
+        totalBytesToDownload: 0,
+      },
+      configImport: null,
     };
   }
 
@@ -876,19 +951,58 @@
     }));
 
     registerBridgePair('VtStartHotSpotService', createExecuteBridgeObject('VtStartHotSpotService', (port) => {
+      const httpPort = toInteger(port, 8578);
+      const socksPort = httpPort === 8578 ? 8579 : httpPort + 1;
+      const socksUdpPort = httpPort === 8578 ? 8580 : httpPort + 2;
+      const ip = '192.168.43.1';
       state.hotSpotStatus = 'RUNNING';
-      state.hotSpotPort = toInteger(port, 8080);
-      if (autoEvents) emit('hotSpotState', 'RUNNING');
+      state.hotSpotPort = httpPort;
+      state.hotSpotInfo = {
+        state: 'RUNNING',
+        running: true,
+        ip,
+        httpPort,
+        socksPort,
+        socksUdpPort,
+        udpSupported: true,
+        httpProxy: `${ip}:${httpPort}`,
+        socksProxy: `${ip}:${socksPort}`,
+        socksUdpProxy: `${ip}:${socksUdpPort}`,
+        pacUrl: `http://${ip}:${httpPort}/proxy.pac`,
+        helpUrl: `http://${ip}:${httpPort}/`,
+        whatsappChatPort: 5222,
+        whatsappMediaPort: 7777,
+        whatsappProxy: ip,
+      };
+      if (autoEvents) {
+        emit('hotSpotState', 'RUNNING');
+        emit('hotSpotInfo', state.hotSpotInfo);
+      }
     }));
 
     registerBridgePair('VtStopHotSpotService', createExecuteBridgeObject('VtStopHotSpotService', () => {
       state.hotSpotStatus = 'STOPPED';
-      if (autoEvents) emit('hotSpotState', 'STOPPED');
+      if (state.hotSpotInfo) {
+        state.hotSpotInfo = {
+          ...state.hotSpotInfo,
+          state: 'STOPPED',
+          running: false,
+          whatsappChatPort: 0,
+          whatsappMediaPort: 0,
+          whatsappProxy: '',
+        };
+      }
+      if (autoEvents) {
+        emit('hotSpotState', 'STOPPED');
+        emit('hotSpotInfo', state.hotSpotInfo);
+      }
     }));
 
     registerBridgePair('VtGetStatusHotSpotService', createExecuteBridgeObject('VtGetStatusHotSpotService', () => state.hotSpotStatus));
+    registerBridgePair('VtGetHotSpotInfo', createExecuteBridgeObject('VtGetHotSpotInfo', () => JSON.stringify(state.hotSpotInfo || {})));
     registerBridgePair('VtGetNetworkDownloadBytes', createExecuteBridgeObject('VtGetNetworkDownloadBytes', () => state.networkDownloadBytes));
     registerBridgePair('VtGetNetworkUploadBytes', createExecuteBridgeObject('VtGetNetworkUploadBytes', () => state.networkUploadBytes));
+    registerBridgePair('VtGetStatsSnapshot', createExecuteBridgeObject('VtGetStatsSnapshot', () => JSON.stringify(state.statsSnapshot)));
     registerBridgePair('VtAppVersion', createExecuteBridgeObject('VtAppVersion', () => state.appVersion));
 
     registerBridgePair('VtActionHandler', createExecuteBridgeObject('VtActionHandler', (action) => {
@@ -938,40 +1052,52 @@
           state.customDns.enabled = Boolean(enabled);
         });
       },
-      set: function set(enabledOrJson, primary, secondary) {
+      set: function set(enabledOrJson, primary, secondary, primaryIpv6, secondaryIpv6) {
         const args = Array.from(arguments);
         return runCall('VtCustomDns', 'set', args, () => {
           if (typeof enabledOrJson === 'object' && enabledOrJson !== null) {
             if ('enabled' in enabledOrJson) state.customDns.enabled = Boolean(enabledOrJson.enabled);
             if ('primary' in enabledOrJson) state.customDns.primary = String(enabledOrJson.primary || '');
             if ('secondary' in enabledOrJson) state.customDns.secondary = String(enabledOrJson.secondary || '');
+            if ('primaryIpv6' in enabledOrJson) state.customDns.primaryIpv6 = String(enabledOrJson.primaryIpv6 || '');
+            if ('secondaryIpv6' in enabledOrJson) state.customDns.secondaryIpv6 = String(enabledOrJson.secondaryIpv6 || '');
           } else if (typeof enabledOrJson === 'string' && enabledOrJson.trim().startsWith('{')) {
             try {
               const parsed = JSON.parse(enabledOrJson);
               if ('enabled' in parsed) state.customDns.enabled = Boolean(parsed.enabled);
               if ('primary' in parsed) state.customDns.primary = String(parsed.primary || '');
               if ('secondary' in parsed) state.customDns.secondary = String(parsed.secondary || '');
+              if ('primaryIpv6' in parsed) state.customDns.primaryIpv6 = String(parsed.primaryIpv6 || '');
+              if ('secondaryIpv6' in parsed) state.customDns.secondaryIpv6 = String(parsed.secondaryIpv6 || '');
             } catch (_e) {}
           } else {
             state.customDns.enabled = Boolean(enabledOrJson);
             state.customDns.primary = String(primary || '');
             state.customDns.secondary = String(secondary || '');
+            if (primaryIpv6 !== undefined) state.customDns.primaryIpv6 = String(primaryIpv6 || '');
+            if (secondaryIpv6 !== undefined) state.customDns.secondaryIpv6 = String(secondaryIpv6 || '');
           }
           const servers = [];
           if (state.customDns.primary) servers.push(state.customDns.primary);
           if (state.customDns.secondary) servers.push(state.customDns.secondary);
+          if (state.customDns.primaryIpv6) servers.push(state.customDns.primaryIpv6);
+          if (state.customDns.secondaryIpv6) servers.push(state.customDns.secondaryIpv6);
           state.customDns.servers = servers;
         });
       },
-      save: function save(enabled, primary, secondary) {
+      save: function save(enabled, primary, secondary, primaryIpv6, secondaryIpv6) {
         const args = Array.from(arguments);
         return runCall('VtCustomDns', 'save', args, () => {
           state.customDns.enabled = Boolean(enabled);
           state.customDns.primary = String(primary || '');
           state.customDns.secondary = String(secondary || '');
+          if (primaryIpv6 !== undefined) state.customDns.primaryIpv6 = String(primaryIpv6 || '');
+          if (secondaryIpv6 !== undefined) state.customDns.secondaryIpv6 = String(secondaryIpv6 || '');
           const servers = [];
           if (state.customDns.primary) servers.push(state.customDns.primary);
           if (state.customDns.secondary) servers.push(state.customDns.secondary);
+          if (state.customDns.primaryIpv6) servers.push(state.customDns.primaryIpv6);
+          if (state.customDns.secondaryIpv6) servers.push(state.customDns.secondaryIpv6);
           state.customDns.servers = servers;
         });
       },
@@ -990,6 +1116,102 @@
 
     registerBridgePair('VtCustomDns', customDnsObject);
     registerBridgePair('VtShowCustomDnsDialog', showCustomDnsDialogObject);
+
+    // Play In-App Update Simulator: available -> downloading -> downloaded -> installed
+    function setPlayUpdate(patch) {
+      state.playUpdate = { ...state.playUpdate, ...patch };
+      if (autoEvents) emit('playUpdateState', state.playUpdate);
+    }
+
+    const playUpdateObject = {
+      getState: function getState() {
+        return runCall('VtPlayUpdate', 'getState', [], () => toJsonStringOrNull(state.playUpdate));
+      },
+      execute: function execute() {
+        return runCall('VtPlayUpdate', 'execute', [], () => toJsonStringOrNull(state.playUpdate));
+      },
+      check: function check() {
+        return runCall('VtPlayUpdate', 'check', [], () => {
+          if (autoEvents) emit('playUpdateState', state.playUpdate);
+        });
+      },
+      start: function start(type) {
+        return runCall('VtPlayUpdate', 'start', [type], () => {
+          if (state.playUpdate.status !== 'available') return;
+          const total = state.playUpdate.totalBytesToDownload || 10 * 1024 * 1024;
+          if (type === 'IMMEDIATE') {
+            setPlayUpdate({ status: 'installing', bytesDownloaded: total, totalBytesToDownload: total });
+            setPlayUpdate({ status: 'installed' });
+            return;
+          }
+          setPlayUpdate({ status: 'downloading', bytesDownloaded: 0, totalBytesToDownload: total });
+          setPlayUpdate({ status: 'downloaded', bytesDownloaded: total });
+        });
+      },
+      complete: function complete() {
+        return runCall('VtPlayUpdate', 'complete', [], () => {
+          if (state.playUpdate.status !== 'downloaded') return;
+          setPlayUpdate({ status: 'installing' });
+          setPlayUpdate({ status: 'installed' });
+        });
+      },
+    };
+
+    registerBridgePair('VtPlayUpdate', playUpdateObject);
+
+    // Offline config import: simulateConfigImport() -> pending -> confirm / reject
+    function finishConfigImport(result) {
+      state.configImport = null;
+      if (autoEvents) emit('configImport', result);
+    }
+
+    function simulateConfigImport(configs, source) {
+      const items = (Array.isArray(configs) && configs.length ? configs : [{ name: 'Config Importada' }])
+        .map((item) => ({
+          name: String((item && item.name) || 'Config Importada'),
+          description: item && item.description != null ? String(item.description) : null,
+          mode: String((item && item.mode) || 'SSH'),
+        }));
+      state.configImport = {
+        status: 'pending',
+        source: source || 'deeplink',
+        count: items.length,
+        configs: items,
+      };
+      if (autoEvents) emit('configImport', state.configImport);
+      return controller;
+    }
+
+    const configImportObject = {
+      getPending: function getPending() {
+        return runCall('VtConfigImport', 'getPending', [], () => toJsonStringOrNull(state.configImport));
+      },
+      execute: function execute() {
+        return runCall('VtConfigImport', 'execute', [], () => toJsonStringOrNull(state.configImport));
+      },
+      confirm: function confirm() {
+        return runCall('VtConfigImport', 'confirm', [], () => {
+          const pending = state.configImport;
+          if (!pending) return;
+          let nextId = 1000 + state.configs.reduce((sum, category) => sum + (category.items || []).length, 0);
+          finishConfigImport({
+            status: 'imported',
+            source: pending.source,
+            count: pending.count,
+            configs: pending.configs.map((item) => ({ id: ++nextId, ...item })),
+          });
+        });
+      },
+      reject: function reject() {
+        return runCall('VtConfigImport', 'reject', [], () => {
+          const pending = state.configImport;
+          if (!pending) return;
+          finishConfigImport({ status: 'rejected', source: pending.source, count: 0, configs: [] });
+        });
+      },
+    };
+
+    registerBridgePair('VtConfigImport', configImportObject);
 
     function install() {
       if (installed) return controller;
@@ -1102,6 +1324,7 @@
       clearImplementations,
       emit,
       getBridgeObject,
+      simulateConfigImport,
     };
 
     return controller;

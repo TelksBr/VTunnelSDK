@@ -340,8 +340,8 @@ Os métodos antigos `sdk.config.importConfig(payload)`, `hasPendingConfigImport(
 | `getHotSpotStatus()` | `VTunnelHotSpotStatus \| null` | `VtGetStatusHotSpotService.execute()` | Status simples (`RUNNING`, `STOPPED`, …). |
 | `getHotSpotInfo()` | `VTunnelHotSpotInfo \| null` | `VtGetHotSpotInfo.execute()` | IP, portas HTTP/SOCKS/UDP, PAC, `helpUrl`, flag `udpSupported` e portas do proxy do WhatsApp (`whatsappChatPort`, `whatsappMediaPort`, `whatsappProxy`; `0`/vazio quando parado ou se a porta não abriu) para o layout. |
 | `isHotSpotRunning()` | `boolean` | `sdk.android.getHotSpotStatus() === 'RUNNING'` | Atalho para verificar se o proxy de hotspot está ativo. |
-| `getNetworkDownloadBytes()` | `number \| null` | `VtGetNetworkDownloadBytes.execute()` | Total de bytes baixados na sessão atual. |
-| `getNetworkUploadBytes()` | `number \| null` | `VtGetNetworkUploadBytes.execute()` | Total de bytes enviados na sessão atual. |
+| `getNetworkDownloadBytes()` | `number \| null` | `VtGetNetworkDownloadBytes.execute()` | Contador global de bytes recebidos pelo dispositivo; não é específico da sessão VPN. |
+| `getNetworkUploadBytes()` | `number \| null` | `VtGetNetworkUploadBytes.execute()` | Contador global de bytes enviados pelo dispositivo; não é específico da sessão VPN. |
 | `getAppVersion()` | `string \| null` | `VtAppVersion.execute()` | Versão do aplicativo instalada no Android. |
 | `handleAction(action: string)` | `void` | `VtActionHandler.execute(action)` | Envia uma ação customizada para tratamento nativo pelo host. |
 | `closeApp()` | `void` | `VtCloseApp.execute()` | Fecha a aplicação nativa. |
@@ -354,6 +354,25 @@ Os métodos antigos `sdk.config.importConfig(payload)`, `hasPendingConfigImport(
 | `getDiagnosticReport()` | `string \| null` | `VtGetDiagnosticReport.execute()` | Gera um relatório textual de diagnóstico de rede e conexões. |
 | `copyDiagnosticReport()` | `void` | `VtCopyDiagnosticReport.execute()` | Gera e copia o relatório de diagnóstico diretamente para o clipboard. |
 | `isSafeMode()` | `boolean` | `VtIsSafeMode.execute()` | Informa se o app está em Modo de Segurança. |
+
+---
+
+## 5.1. sdk.stats (Estatísticas locais)
+
+| Método | Retorno | Bridge Nativa | Descrição |
+| :--- | :--- | :--- | :--- |
+| `getSnapshot()` | `VTunnelStatsSnapshot \| null` | `VtGetStatsSnapshot.execute()` | Lê snapshot de bateria, histórico de CPU e sessão VPN coletados localmente pelo app. |
+
+`snapshot.battery` contém o nível atual, amostras de até 24 horas e tempo de CPU do processo. O histórico é coletado a cada cinco minutos enquanto o app está visível ou a VPN está conectada; o Android pode interromper a coleta quando o processo é encerrado. Os valores em mAh são a variação líquida do dispositivo e não isolam o consumo causado pelo VTunnel.
+
+`snapshot.vpn` contém estado/duração da sessão e contadores de rede do UID do VTunnel. Os contadores não somam o payload de outros aplicativos roteados pelo túnel. Para layouts fora do Android ou testes locais, o simulador aceita `statsSnapshot` no seu estado.
+
+```ts
+const snapshot = sdk.stats.getSnapshot();
+console.log(snapshot?.battery.currentLevelPercent);
+console.log(snapshot?.battery.foregroundCpuMs24h);
+console.log(snapshot?.vpn.appUidRxBytesThisSession);
+```
 
 ---
 

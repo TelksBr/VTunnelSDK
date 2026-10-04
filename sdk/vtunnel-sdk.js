@@ -72,6 +72,7 @@
     'VtGetHotSpotInfo',
     'VtGetNetworkDownloadBytes',
     'VtGetNetworkUploadBytes',
+    'VtGetStatsSnapshot',
     'VtAppVersion',
     'VtActionHandler',
     'VtCloseApp',
@@ -664,6 +665,13 @@
     }
   }
 
+  class StatsModule extends ModuleBase {
+    /** Returns battery, CPU, and VPN-session metrics collected by the native app. */
+    getSnapshot() {
+      return this.callJson('VtGetStatsSnapshot', 'execute');
+    }
+  }
+
   class AppModule extends ModuleBase {
     cleanApp() {
       this.callVoid('VtCleanApp', 'execute');
@@ -900,6 +908,7 @@
 
       this.config = new ConfigModule(this.gateway);
       this.main = new MainModule(this.gateway);
+      this.stats = new StatsModule(this.gateway);
       this.text = new TextModule(this.gateway);
       this.app = new AppModule(this.gateway);
       this.android = new AndroidModule(this.gateway);
@@ -1007,7 +1016,7 @@
 
   const DTunnelSDK = VTunnelSDK;
 
-  VTunnelSDK.VERSION = '2.0.0';
+  VTunnelSDK.VERSION = '2.10.0';
   VTunnelSDK.BRIDGE_OBJECTS = BRIDGE_OBJECTS;
   VTunnelSDK.VT_BRIDGE_OBJECTS = VT_BRIDGE_OBJECTS;
   VTunnelSDK.DT_BRIDGE_OBJECTS = DT_BRIDGE_OBJECTS;

@@ -16,6 +16,7 @@ import type {
   VTunnelNotification,
   VTunnelPendingImport,
   VTunnelSemanticEventName,
+  VTunnelStatsSnapshot,
   VTunnelVPNState,
   VTunnelCustomDnsConfig,
   VTunnelDnsPreset,
@@ -69,6 +70,7 @@ export interface VTunnelSDKSimulatorState {
   hotSpotInfo: VTunnelHotSpotInfo;
   networkDownloadBytes: number;
   networkUploadBytes: number;
+  statsSnapshot: VTunnelStatsSnapshot;
   appVersion: string;
   lastExternalUrl: string | null;
   lastAction: VTunnelAction | (string & {}) | null;
