@@ -916,6 +916,7 @@ export declare class VTunnelAndroidModule {
   getStatusBarHeight(): number | null;
   getNavigationBarHeight(): number | null;
   openExternalUrl(url: string): void;
+  /** Mirrors the native activation flow: opens Android hotspot settings when Wi-Fi tethering is off, otherwise starts the sharing proxy. Call again after enabling hotspot in Settings. */
   startHotSpotService(port?: number): void;
   stopHotSpotService(): void;
   getHotSpotStatus(): VTunnelHotSpotStatus | null;

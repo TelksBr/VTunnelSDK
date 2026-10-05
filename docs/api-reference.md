@@ -335,7 +335,7 @@ Os métodos antigos `sdk.config.importConfig(payload)`, `hasPendingConfigImport(
 | `getStatusBarHeight()` | `number \| null` | `VtGetStatusBarHeight.execute()` | Retorna a altura da barra de status em pixels para cálculo de insets seguros. |
 | `getNavigationBarHeight()` | `number \| null` | `VtGetNavigationBarHeight.execute()` | Retorna a altura da barra de navegação virtual em pixels. |
 | `openExternalUrl(url: string)` | `void` | `VtOpenExternalUrl.execute(url)` | Abre uma URL no navegador padrão do dispositivo fora do WebView. |
-| `startHotSpotService(port?: number)` | `void` | `VtStartHotSpotService.execute(port)` | Inicia o proxy HotSpot (HTTP + SOCKS + PAC + proxy do WhatsApp nas portas 5222/7777). VPN precisa estar conectado. |
+| `startHotSpotService(port?: number)` | `void` | `VtStartHotSpotService.execute(port)` | Segue o fluxo do botão nativo: exige a VPN conectada; se o hotspot Wi‑Fi do Android estiver desligado, abre as configurações do sistema; quando estiver ativo, inicia o proxy HTTP + SOCKS + PAC. Ao voltar das configurações, chame novamente para iniciar o proxy. |
 | `stopHotSpotService()` | `void` | `VtStopHotSpotService.execute()` | Para o serviço de HotSpot. |
 | `getHotSpotStatus()` | `VTunnelHotSpotStatus \| null` | `VtGetStatusHotSpotService.execute()` | Status simples (`RUNNING`, `STOPPED`, …). |
 | `getHotSpotInfo()` | `VTunnelHotSpotInfo \| null` | `VtGetHotSpotInfo.execute()` | IP, portas HTTP/SOCKS/UDP, PAC, `helpUrl`, flag `udpSupported` e portas do proxy do WhatsApp (`whatsappChatPort`, `whatsappMediaPort`, `whatsappProxy`; `0`/vazio quando parado ou se a porta não abriu) para o layout. |
