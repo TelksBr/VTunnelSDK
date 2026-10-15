@@ -487,3 +487,17 @@ export declare class VTunnelBridgeError extends Error {
   readonly details: Record<string, unknown>;
 }
 ```
+
+## sdk.ads — anúncios e tempo de conexão
+
+Disponível a partir do SDK 2.11.0 e do APK com `VtAds`/`DtAds`.
+
+- `isSupported(): boolean`: detecta suporte da ponte atual.
+- `getState(): VTunnelAdsState | null`: snapshot de Ads, contador, VPN, cortesia, recompensa e flags `nativeUi`.
+- `preloadRewarded(): void`: solicita a inicialização/cache de rewarded. O estado `READY` indica disponibilidade.
+- `showRewarded(): void`: solicita vídeo diretamente, sem confirmação nativa. A configuração do painel controla o carregamento nativo.
+- `cancelRewarded(): void`: cancela somente a espera. Não interrompe vídeo em abertura/exibição.
+
+`main.showAdsRewardedDialog()` permanece compatível e respeita `APP_ADS_REWARDED_NATIVE_PROMPT`. Os métodos antigos de leitura de tempo continuam disponíveis.
+
+Eventos via `sdk.on()` ou `useVTunnelEvent()`: `adsTimerUpdated` (segundos), `adsTimeWarning` e `adsTimeExpired` (snapshot), `adsRewardedState` (estado do anúncio). Consulte [Ads em HTML](ads-html.md) para os estados e a configuração do painel.

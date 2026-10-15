@@ -92,6 +92,7 @@
     'VtShowCustomDnsDialog',
     'VtPlayUpdate',
     'VtConfigImport',
+    'VtAds',
   ]);
 
   const DT_BRIDGE_OBJECT_NAMES = Object.freeze(
@@ -103,6 +104,23 @@
   );
 
   const NATIVE_CALLBACK_NAMES = Object.freeze([
+    'VtAdsTimerUpdatedEvent',
+    'vtAdsTimerUpdatedListener',
+    'DtAdsTimerUpdatedEvent',
+    'dtAdsTimerUpdatedListener',
+    'VtAdsTimeWarningEvent',
+    'vtAdsTimeWarningListener',
+    'DtAdsTimeWarningEvent',
+    'dtAdsTimeWarningListener',
+    'VtAdsTimeExpiredEvent',
+    'vtAdsTimeExpiredListener',
+    'DtAdsTimeExpiredEvent',
+    'dtAdsTimeExpiredListener',
+    'VtAdsRewardedStateEvent',
+    'vtAdsRewardedStateListener',
+    'DtAdsRewardedStateEvent',
+    'dtAdsRewardedStateListener',
+
     'VtVpnStateEvent',
     'VtVpnStartedSuccessEvent',
     'VtVpnStoppedSuccessEvent',
@@ -196,6 +214,11 @@
   ]);
 
   const SEMANTIC_EVENT_TO_CALLBACK = Object.freeze({
+    adsTimerUpdated: 'VtAdsTimerUpdatedEvent',
+    adsTimeWarning: 'VtAdsTimeWarningEvent',
+    adsTimeExpired: 'VtAdsTimeExpiredEvent',
+    adsRewardedState: 'VtAdsRewardedStateEvent',
+
     vpnState: 'VtVpnStateEvent',
     vpnStartedSuccess: 'VtVpnStartedSuccessEvent',
     vpnStoppedSuccess: 'VtVpnStoppedSuccessEvent',
@@ -222,6 +245,11 @@
   });
 
   const JSON_EVENT_NAMES = Object.freeze([
+    'adsTimerUpdated',
+    'adsTimeWarning',
+    'adsTimeExpired',
+    'adsRewardedState',
+
     'checkUserResult',
     'messageError',
     'notification',
@@ -366,6 +394,11 @@
       networkName: 'vtunnel-Wifi',
       pingResult: '42ms',
       adsEnabled: true,
+      ads: {
+        initialSeconds: 240, rewardSeconds: 7200, warningSeconds: 600, graceUsed: false,
+        nativeUi: { timer: true, warningPrompt: true, expiredPrompt: true, rewardedPrompt: true, rewardedLoading: true, banner: true },
+        rewarded: { state: 'IDLE', ready: false, busy: false, requestId: null, rewardEarned: false, error: null },
+      },
       remainingConnectionTime: 3600,
       remainingConnectionTimerText: '01:00:00',
       lastVpnError: null,
@@ -628,6 +661,9 @@
         ? toJsonStringOrNull(payload)
         : payload;
 
+      if (eventName.startsWith('ads')) {
+        return emitCallback(callbackName, val) || (altCallbackName ? emitCallback(altCallbackName, val) : false);
+      }
       let success = false;
       if (val === undefined) {
         success = emitCallback(callbackName) || success;
@@ -886,7 +922,7 @@
     registerBridgePair('VtAirplaneState', createExecuteBridgeObject('VtAirplaneState', () => state.airplaneState));
     registerBridgePair('VtAppIsCurrentAssistant', createExecuteBridgeObject('VtAppIsCurrentAssistant', () => state.assistantState));
     registerBridgePair('VtShowMenuDialog', createExecuteBridgeObject('VtShowMenuDialog', () => {}));
-    registerBridgePair('VtShowDialogAdsRewarded', createExecuteBridgeObject('VtShowDialogAdsRewarded', () => {}));
+    registerBridgePair('VtShowDialogAdsRewarded', createExecuteBridgeObject('VtShowDialogAdsRewarded', () => startRewarded()));
     registerBridgePair('VtIsAdsEnabled', createExecuteBridgeObject('VtIsAdsEnabled', () => state.adsEnabled));
     registerBridgePair('VtGetRemainingConnectionTime', createExecuteBridgeObject('VtGetRemainingConnectionTime', () => state.remainingConnectionTime));
     registerBridgePair('VtGetRemainingConnectionTimerText', createExecuteBridgeObject('VtGetRemainingConnectionTimerText', () => state.remainingConnectionTimerText));
@@ -1117,6 +1153,92 @@
     registerBridgePair('VtCustomDns', customDnsObject);
     registerBridgePair('VtShowCustomDnsDialog', showCustomDnsDialogObject);
 
+    let adSequence = 0;
+    let adsWarned = false;
+    function formatAdsTime(seconds) {
+      const n = Math.max(0, Math.floor(seconds));
+      return [Math.floor(n / 3600), Math.floor(n / 60) % 60, n % 60].map(v => String(v).padStart(2, '0')).join(':');
+    }
+    function adsSnapshot() {
+      return {
+        enabled: state.adsEnabled, provider: 'APPODEAL', remainingSeconds: state.remainingConnectionTime,
+        timerText: formatAdsTime(state.remainingConnectionTime), timerRunning: state.adsEnabled && state.vpnState === 'CONNECTED',
+        vpnConnected: state.vpnState === 'CONNECTED', graceUsed: state.ads.graceUsed,
+        initialSeconds: state.ads.initialSeconds, rewardSeconds: state.ads.rewardSeconds, warningSeconds: Math.max(10, state.ads.warningSeconds),
+        nativeUi: cloneValue(state.ads.nativeUi), rewarded: rewardedSnapshot(),
+      };
+    }
+    function rewardedSnapshot(patch) {
+      const current = { ...state.ads.rewarded, ...patch };
+      return { ...current, remainingSeconds: state.remainingConnectionTime, rewardSeconds: current.rewardEarned ? state.ads.rewardSeconds : 0 };
+    }
+    function updateRewarded(patch) {
+      state.ads.rewarded = { ...state.ads.rewarded, ...patch };
+      if (autoEvents) emit('adsRewardedState', rewardedSnapshot());
+    }
+    function startRewarded() {
+      if (state.ads.rewarded.busy) {
+        if (autoEvents) emit('adsRewardedState', rewardedSnapshot({ state: 'REJECTED', error: 'A rewarded request is already active' }));
+        return;
+      }
+      updateRewarded({ state: 'LOADING', busy: true, requestId: String(++adSequence), rewardEarned: false, error: null });
+      if (!state.adsEnabled) { updateRewarded({ state: 'FAILED', busy: false, error: 'Ads are disabled' }); return; }
+      if (state.ads.rewarded.ready) { simulateRewardedResult('ready'); simulateRewardedResult('shown'); }
+    }
+    function simulateRewardedResult(result, error) {
+      const current = state.ads.rewarded;
+      if (!current.busy) return;
+      if (result === 'ready') { updateRewarded({ state: 'READY', ready: true }); return; }
+      if (result === 'shown') { updateRewarded({ state: 'SHOWING', ready: false }); return; }
+      if (result === 'rewarded') {
+        if (current.rewardEarned || !['SHOWING', 'OPENING'].includes(current.state)) return;
+        state.remainingConnectionTime += state.ads.rewardSeconds;
+        state.remainingConnectionTimerText = formatAdsTime(state.remainingConnectionTime);
+        state.ads.graceUsed = false;
+        adsWarned = false;
+        if (autoEvents) emit('adsTimerUpdated', state.remainingConnectionTime);
+        updateRewarded({ state: 'REWARDED', rewardEarned: true, ready: false });
+      } else if (result === 'closed') {
+        updateRewarded({ state: 'CLOSED', busy: false, ready: false });
+      } else if (result === 'failed') {
+        updateRewarded({ state: 'FAILED', busy: false, ready: false, error: error || 'Ad not ready' });
+      }
+    }
+    function tickAds(seconds = 1) {
+      for (let i = 0; i < Math.max(0, Math.floor(seconds)); i++) {
+        if (!state.adsEnabled || state.vpnState !== 'CONNECTED') break;
+        state.remainingConnectionTime = Math.max(0, state.remainingConnectionTime - 1);
+        if (state.remainingConnectionTime === 0 && !state.ads.graceUsed) {
+          state.ads.graceUsed = true;
+          state.remainingConnectionTime = 120;
+          adsWarned = false;
+          state.remainingConnectionTimerText = formatAdsTime(state.remainingConnectionTime);
+          if (autoEvents) emit('adsTimerUpdated', state.remainingConnectionTime);
+          continue;
+        }
+        state.remainingConnectionTimerText = formatAdsTime(state.remainingConnectionTime);
+        if (autoEvents) emit('adsTimerUpdated', state.remainingConnectionTime);
+        if (state.remainingConnectionTime === 0) {
+          state.vpnState = 'DISCONNECTED';
+          if (autoEvents) { emit('vpnState', state.vpnState); emit('adsTimeExpired', adsSnapshot()); }
+        } else if (!adsWarned && state.remainingConnectionTime <= Math.max(10, state.ads.warningSeconds)) {
+          adsWarned = true;
+          if (autoEvents) emit('adsTimeWarning', adsSnapshot());
+        }
+      }
+    }
+    const adsObject = {
+      getState: () => runCall('VtAds', 'getState', [], () => JSON.stringify(adsSnapshot())),
+      showRewarded: () => runCall('VtAds', 'showRewarded', [], startRewarded),
+      cancelRewarded: () => runCall('VtAds', 'cancelRewarded', [], () => {
+        if (state.ads.rewarded.busy && ['LOADING', 'READY'].includes(state.ads.rewarded.state)) updateRewarded({ state: 'CANCELLED', busy: false });
+      }),
+      preloadRewarded: () => runCall('VtAds', 'preloadRewarded', [], () => {
+        if (state.adsEnabled && !state.ads.rewarded.busy) updateRewarded({ state: 'READY', ready: true, requestId: null, rewardEarned: false, error: null });
+      }),
+    };
+    registerBridgePair('VtAds', adsObject);
+
     // Play In-App Update Simulator: available -> downloading -> downloaded -> installed
     function setPlayUpdate(patch) {
       state.playUpdate = { ...state.playUpdate, ...patch };
@@ -1325,6 +1447,8 @@
       emit,
       getBridgeObject,
       simulateConfigImport,
+      simulateRewardedResult,
+      tickAds,
     };
 
     return controller;

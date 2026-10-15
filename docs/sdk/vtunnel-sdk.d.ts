@@ -21,9 +21,30 @@ export type VTunnelSemanticEventName =
   | 'hotSpotInfo'
   | 'reloadRequest'
   | 'playUpdateState'
-  | 'configImport';
+  | 'configImport'
+  | 'adsTimerUpdated'
+  | 'adsTimeWarning'
+  | 'adsTimeExpired'
+  | 'adsRewardedState';
 
 export type VTunnelCallbackName =
+  | 'VtAdsTimerUpdatedEvent'
+  | 'vtAdsTimerUpdatedListener'
+  | 'DtAdsTimerUpdatedEvent'
+  | 'dtAdsTimerUpdatedListener'
+  | 'VtAdsTimeWarningEvent'
+  | 'vtAdsTimeWarningListener'
+  | 'DtAdsTimeWarningEvent'
+  | 'dtAdsTimeWarningListener'
+  | 'VtAdsTimeExpiredEvent'
+  | 'vtAdsTimeExpiredListener'
+  | 'DtAdsTimeExpiredEvent'
+  | 'dtAdsTimeExpiredListener'
+  | 'VtAdsRewardedStateEvent'
+  | 'vtAdsRewardedStateListener'
+  | 'DtAdsRewardedStateEvent'
+  | 'dtAdsRewardedStateListener'
+
   | 'VtVpnStateEvent'
   | 'VtVpnStartedSuccessEvent'
   | 'VtVpnStoppedSuccessEvent'
@@ -202,6 +223,7 @@ export type DTunnelBridgeObjectName =
   | 'DtCustomDns'
   | 'DtShowCustomDnsDialog'
   | 'DtPlayUpdate'
+  | 'DtAds'
   | 'DtConfigImport';
 
 export type VTOnlyBridgeObjectName =
@@ -291,6 +313,7 @@ export type VTOnlyBridgeObjectName =
   | 'VtCustomDns'
   | 'VtShowCustomDnsDialog'
   | 'VtPlayUpdate'
+  | 'VtAds'
   | 'VtConfigImport';
 
 export type VTunnelBridgeObjectName = VTOnlyBridgeObjectName | DTunnelBridgeObjectName;
@@ -515,6 +538,11 @@ export interface VTunnelDnsPreset {
 export type VTunnelParsedJson<T> = T | string | null;
 
 export interface VTunnelEventPayloadMap {
+  adsTimerUpdated: number;
+  adsTimeWarning: VTunnelAdsState;
+  adsTimeExpired: VTunnelAdsState;
+  adsRewardedState: VTunnelRewardedAdState;
+
   vpnState: VTunnelVPNState | null;
   vpnStartedSuccess: undefined;
   vpnStoppedSuccess: undefined;
@@ -541,6 +569,11 @@ export interface VTunnelEventPayloadMap {
 }
 
 export interface VTunnelEventRawPayloadMap {
+  adsTimerUpdated: string | number | null;
+  adsTimeWarning: string | null;
+  adsTimeExpired: string | null;
+  adsRewardedState: string | null;
+
   vpnState: string | null;
   vpnStartedSuccess: undefined;
   vpnStoppedSuccess: undefined;
@@ -567,6 +600,11 @@ export interface VTunnelEventRawPayloadMap {
 }
 
 export interface VTunnelEventCallbackMap {
+  adsTimerUpdated: 'VtAdsTimerUpdatedEvent';
+  adsTimeWarning: 'VtAdsTimeWarningEvent';
+  adsTimeExpired: 'VtAdsTimeExpiredEvent';
+  adsRewardedState: 'VtAdsRewardedStateEvent';
+
   vpnState: 'VtVpnStateEvent';
   vpnStartedSuccess: 'VtVpnStartedSuccessEvent';
   vpnStoppedSuccess: 'VtVpnStoppedSuccessEvent';
@@ -593,6 +631,11 @@ export interface VTunnelEventCallbackMap {
 }
 
 export interface DTunnelEventCallbackMap {
+  adsTimerUpdated: 'DtAdsTimerUpdatedEvent';
+  adsTimeWarning: 'DtAdsTimeWarningEvent';
+  adsTimeExpired: 'DtAdsTimeExpiredEvent';
+  adsRewardedState: 'DtAdsRewardedStateEvent';
+
   vpnState: 'DtVpnStateEvent';
   vpnStartedSuccess: 'DtVpnStartedSuccessEvent';
   vpnStoppedSuccess: 'DtVpnStoppedSuccessEvent';
@@ -619,6 +662,23 @@ export interface DTunnelEventCallbackMap {
 }
 
 export interface VTunnelCallbackToEventMap {
+  VtAdsTimerUpdatedEvent: 'adsTimerUpdated';
+  vtAdsTimerUpdatedListener: 'adsTimerUpdated';
+  DtAdsTimerUpdatedEvent: 'adsTimerUpdated';
+  dtAdsTimerUpdatedListener: 'adsTimerUpdated';
+  VtAdsTimeWarningEvent: 'adsTimeWarning';
+  vtAdsTimeWarningListener: 'adsTimeWarning';
+  DtAdsTimeWarningEvent: 'adsTimeWarning';
+  dtAdsTimeWarningListener: 'adsTimeWarning';
+  VtAdsTimeExpiredEvent: 'adsTimeExpired';
+  vtAdsTimeExpiredListener: 'adsTimeExpired';
+  DtAdsTimeExpiredEvent: 'adsTimeExpired';
+  dtAdsTimeExpiredListener: 'adsTimeExpired';
+  VtAdsRewardedStateEvent: 'adsRewardedState';
+  vtAdsRewardedStateListener: 'adsRewardedState';
+  DtAdsRewardedStateEvent: 'adsRewardedState';
+  dtAdsRewardedStateListener: 'adsRewardedState';
+
   VtVpnStateEvent: 'vpnState';
   vtVpnStateListener: 'vpnState';
   DtVpnStateEvent: 'vpnState';
@@ -851,6 +911,42 @@ export declare class VTunnelTextModule {
   translate(label: string | null): string | null;
 }
 
+export type VTunnelRewardedAdStatus = 'IDLE' | 'LOADING' | 'READY' | 'OPENING' | 'SHOWING' | 'REWARDED' | 'CLOSED' | 'FAILED' | 'CANCELLED' | 'REJECTED';
+export interface VTunnelRewardedAdState {
+  state: VTunnelRewardedAdStatus;
+  ready: boolean;
+  busy: boolean;
+  requestId: string | null;
+  rewardEarned: boolean;
+  error: string | null;
+  remainingSeconds: number;
+  rewardSeconds: number;
+}
+export interface VTunnelAdsState {
+  enabled: boolean;
+  provider: 'APPODEAL';
+  remainingSeconds: number;
+  timerText: string;
+  timerRunning: boolean;
+  vpnConnected: boolean;
+  graceUsed: boolean;
+  initialSeconds: number;
+  rewardSeconds: number;
+  warningSeconds: number;
+  rewarded: VTunnelRewardedAdState;
+  nativeUi: { timer: boolean; warningPrompt: boolean; expiredPrompt: boolean; rewardedPrompt: boolean; rewardedLoading: boolean; banner: boolean };
+}
+export interface VTunnelAdsModule {
+  /** Check before using on Android versions older than the Ads bridge. */
+  isSupported(): boolean;
+  getState(): VTunnelAdsState | null;
+  preloadRewarded(): void;
+  /** Starts rewarded video directly; respects the panel's native loading setting. */
+  showRewarded(): void;
+  /** Cancels a pending load; never interrupts a video that is already opening/showing. */
+  cancelRewarded(): void;
+}
+
 export interface VTunnelStatsBatteryPoint {
   timeMs: number;
   levelPercent: number | null;
@@ -1000,6 +1096,7 @@ export declare class VTunnelSDK {
   readonly config: VTunnelConfigModule;
   readonly main: VTunnelMainModule;
   readonly stats: VTunnelStatsModule;
+  readonly ads: VTunnelAdsModule;
   readonly text: VTunnelTextModule;
   readonly app: VTunnelAppModule;
   readonly android: VTunnelAndroidModule;
@@ -1130,6 +1227,10 @@ export type DTunnelMainModule = VTunnelMainModule;
 export declare const DTunnelMainModule: typeof VTunnelMainModule;
 export type DTunnelTextModule = VTunnelTextModule;
 export declare const DTunnelTextModule: typeof VTunnelTextModule;
+export type DTunnelAdsModule = VTunnelAdsModule;
+export type DTunnelAdsState = VTunnelAdsState;
+export type DTunnelRewardedAdState = VTunnelRewardedAdState;
+export type DTunnelRewardedAdStatus = VTunnelRewardedAdStatus;
 export type DTunnelStatsBatteryPoint = VTunnelStatsBatteryPoint;
 export type DTunnelStatsBatterySnapshot = VTunnelStatsBatterySnapshot;
 export type DTunnelStatsVpnSnapshot = VTunnelStatsVpnSnapshot;

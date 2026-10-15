@@ -1,0 +1,10 @@
+import { VTunnelSDK, VTunnelAdsState, VTunnelRewardedAdState } from '../../sdk/vtunnel-sdk.js';
+const sdk = new VTunnelSDK();
+const ads: VTunnelAdsState | null = sdk.ads.getState();
+const supported: boolean = sdk.ads.isSupported();
+sdk.ads.showRewarded(); sdk.ads.cancelRewarded(); sdk.ads.preloadRewarded();
+sdk.on('adsTimerUpdated', event => { const seconds: number = event.payload; void seconds; });
+sdk.on('adsTimeWarning', event => { const snapshot: VTunnelAdsState = event.payload; void snapshot; });
+sdk.on('adsTimeExpired', event => { const snapshot: VTunnelAdsState = event.payload; void snapshot; });
+sdk.on('adsRewardedState', event => { const state: VTunnelRewardedAdState = event.payload; void state; });
+void ads; void supported;

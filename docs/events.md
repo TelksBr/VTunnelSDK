@@ -82,3 +82,14 @@ sdk.on('error', (event) => {
 1. **Sempre guarde o retorno de `sdk.on(...)`** para cancelar inscrições quando componentes de interface forem desmontados.
 2. No React, utilize preferencialmente o hook `useVTunnelEvent(eventName, callback)` que cancela automaticamente no unmount.
 3. Se estiver usando `strict: false`, certifique-se de registrar um listener para `'error'` para monitorar anomalias na bridge.
+
+## Eventos de Ads (2.11.0)
+
+Todos os callbacks têm aliases `Vt`/`Dt` e `vt`/`dt`. O Android seleciona um callback disponível para cada atualização, evitando multiplicar o mesmo evento semântico.
+
+- `adsTimerUpdated`: `number`, segundos restantes. Callback `VtAdsTimerUpdatedEvent`; DOM `vt_ads_timer_updated`.
+- `adsTimeWarning`: `VTunnelAdsState`, aviso de tempo acabando; callback `VtAdsTimeWarningEvent`; DOM `vt_ads_time_warning`.
+- `adsTimeExpired`: `VTunnelAdsState`, tempo esgotado e encerramento da sessão; callback `VtAdsTimeExpiredEvent`; DOM `vt_ads_time_expired`.
+- `adsRewardedState`: `VTunnelRewardedAdState`, carregamento e ciclo do vídeo; callback `VtAdsRewardedStateEvent`; DOM `vt_ads_rewarded_state`.
+
+O payload de `sdk.on()` está em `event.payload`; no DOM, em `event.detail`. Escolha uma das formas para não processar o mesmo evento duas vezes. Leia `sdk.ads.getState()` ao iniciar ou retornar ao layout, pois eventos não são um histórico de replay. O fallback DOM do contador funciona em APKs antigos, mas os outros eventos e `sdk.ads` exigem o APK atualizado.

@@ -89,6 +89,7 @@
     'VtShowCustomDnsDialog',
     'VtPlayUpdate',
     'VtConfigImport',
+    'VtAds',
   ]);
 
   const DT_BRIDGE_OBJECTS = Object.freeze(
@@ -98,6 +99,11 @@
   const BRIDGE_OBJECTS = Object.freeze(Array.from(new Set([...VT_BRIDGE_OBJECTS, ...DT_BRIDGE_OBJECTS])));
 
   const EVENT_DEFINITIONS = freezeEventDefinitions({
+    adsTimerUpdated: { callbacks: ['VtAdsTimerUpdatedEvent', 'vtAdsTimerUpdatedListener', 'DtAdsTimerUpdatedEvent', 'dtAdsTimerUpdatedListener'], parseAsJson: true },
+    adsTimeWarning: { callbacks: ['VtAdsTimeWarningEvent', 'vtAdsTimeWarningListener', 'DtAdsTimeWarningEvent', 'dtAdsTimeWarningListener'], parseAsJson: true },
+    adsTimeExpired: { callbacks: ['VtAdsTimeExpiredEvent', 'vtAdsTimeExpiredListener', 'DtAdsTimeExpiredEvent', 'dtAdsTimeExpiredListener'], parseAsJson: true },
+    adsRewardedState: { callbacks: ['VtAdsRewardedStateEvent', 'vtAdsRewardedStateListener', 'DtAdsRewardedStateEvent', 'dtAdsRewardedStateListener'], parseAsJson: true },
+
     vpnState: {
       callbacks: ['VtVpnStateEvent', 'vtVpnStateListener', 'DtVpnStateEvent', 'dtVpnStateListener'],
       parseAsJson: false,
@@ -404,9 +410,15 @@
       this.windowRef = options.windowRef;
       this.eventBus = options.eventBus;
       this.wrappersByCallback = new Map();
+      this.legacyAdsTimerListener = null;
     }
 
     register() {
+      if (!this.windowRef.VtAds && !this.windowRef.DtAds && !this.legacyAdsTimerListener &&
+          typeof this.windowRef.addEventListener === 'function') {
+        this.legacyAdsTimerListener = event => this.dispatch('VtAdsTimerUpdatedEvent', [event.detail]);
+        this.windowRef.addEventListener('vt_ads_timer_updated', this.legacyAdsTimerListener);
+      }
       Object.keys(CALLBACK_TO_EVENT).forEach((callbackName) => {
         if (this.wrappersByCallback.has(callbackName)) return;
 
@@ -420,6 +432,10 @@
     }
 
     unregister() {
+      if (this.legacyAdsTimerListener && typeof this.windowRef.removeEventListener === 'function') {
+        this.windowRef.removeEventListener('vt_ads_timer_updated', this.legacyAdsTimerListener);
+        this.legacyAdsTimerListener = null;
+      }
       this.wrappersByCallback.forEach((wrapper, callbackName) => {
         if (this.windowRef[callbackName] === wrapper) {
           try {
@@ -663,6 +679,14 @@
     translate(label) {
       return this.call('VtTranslateText', 'execute', [label]);
     }
+  }
+
+  class AdsModule extends ModuleBase {
+    isSupported() { return Boolean(this.gateway.getObject('VtAds') || this.gateway.getObject('DtAds')); }
+    getState() { return this.callJson('VtAds', 'getState'); }
+    preloadRewarded() { this.callVoid('VtAds', 'preloadRewarded'); }
+    showRewarded() { this.callVoid('VtAds', 'showRewarded'); }
+    cancelRewarded() { this.callVoid('VtAds', 'cancelRewarded'); }
   }
 
   class StatsModule extends ModuleBase {
@@ -909,6 +933,7 @@
       this.config = new ConfigModule(this.gateway);
       this.main = new MainModule(this.gateway);
       this.stats = new StatsModule(this.gateway);
+      this.ads = new AdsModule(this.gateway);
       this.text = new TextModule(this.gateway);
       this.app = new AppModule(this.gateway);
       this.android = new AndroidModule(this.gateway);
@@ -1016,7 +1041,7 @@
 
   const DTunnelSDK = VTunnelSDK;
 
-  VTunnelSDK.VERSION = '2.10.0';
+  VTunnelSDK.VERSION = '2.11.0';
   VTunnelSDK.BRIDGE_OBJECTS = BRIDGE_OBJECTS;
   VTunnelSDK.VT_BRIDGE_OBJECTS = VT_BRIDGE_OBJECTS;
   VTunnelSDK.DT_BRIDGE_OBJECTS = DT_BRIDGE_OBJECTS;

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![NPM Version](https://img.shields.io/badge/version-2.10.0-blue.svg?style=for-the-badge)](https://github.com/TelksBr/VTunnelSDK)
+[![NPM Version](https://img.shields.io/badge/version-2.11.0-blue.svg?style=for-the-badge)](https://github.com/TelksBr/VTunnelSDK)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178c6.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React Supported](https://img.shields.io/badge/React-18%2B-61dafb.svg?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
@@ -328,3 +328,9 @@ npm run test:typecheck
 ## 📄 Licença
 
 Distribuído sob a licença [MIT](LICENSE).
+
+## Ads em layouts HTML (2.11.0)
+
+`sdk.ads` expõe snapshot nativo, pré-carregamento, exibição direta de rewarded e cancelamento da espera. Os eventos `adsTimerUpdated`, `adsTimeWarning`, `adsTimeExpired` e `adsRewardedState` permitem substituir a interface nativa. A recompensa e a expiração da VPN continuam controladas pelo Android.
+
+Veja o [guia de Ads](docs/ads-html.md) e o [exemplo executável](docs/examples/ads-html.html). Em React, use `useVTunnelEvent` com os mesmos nomes e payloads tipados. A ponte exige um APK atualizado; use `sdk.ads.isSupported()` antes de chamar os novos métodos.

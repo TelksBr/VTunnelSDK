@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VTunnel · Ads em HTML</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0c0a12;color:#f3eefc}*{box-sizing:border-box}body{margin:0;padding:32px 20px}main{max-width:680px;margin:auto}header small{color:#b6a7ce;letter-spacing:.12em}h1{font-size:30px;letter-spacing:-1px}p{color:#b7abc9;line-height:1.6}.card{margin:24px 0;background:#1a1624;border:1px solid #3d2e54;border-radius:18px;padding:24px}.timer{font-size:clamp(40px,9vw,64px);font-variant-numeric:tabular-nums;letter-spacing:2px;font-weight:700;margin:12px 0}.actions{display:flex;gap:10px;flex-wrap:wrap}button{border:1px solid #514067;border-radius:10px;background:#281e38;color:#f3eefc;padding:12px 16px;font:inherit;cursor:pointer}button.primary{background:#7c3aed;border-color:#8b5cf6}button:disabled{opacity:.5;cursor:default}button:focus-visible{outline:3px solid #c4b5fd;outline-offset:3px}#state{min-height:24px;margin:18px 0 0}#sim-controls{border-top:1px solid #3d2e54;padding-top:16px}#sim-controls button{font-size:13px;padding:8px 10px}dialog{background:#1a1624;color:#f3eefc;border:1px solid #514067;border-radius:16px;max-width:440px;padding:24px}dialog::backdrop{background:#0009}pre{overflow:auto;color:#b7abc9;font-size:12px}[hidden]{display:none!important}
+</style></head><body><main>
+<header><small>VTUNNEL SDK · ADS</small><h1>Seu tempo de conexão</h1><p>Interface HTML com contador e estados fornecidos pelo Android.</p></header>
+<section class="card"><span id="connection">Consultando sessão…</span><div id="time" class="timer" role="timer" aria-label="Tempo restante">--:--:--</div>
+<p id="offer"></p><div class="actions"><button id="watch" class="primary" disabled>Assistir e ganhar tempo</button><button id="cancel" hidden>Cancelar espera</button></div><p id="state" role="status" aria-live="polite"></p></section>
+<section id="sim-controls" hidden><p>Simulação local: nenhum anúncio real é exibido. O simulador não substitui bridges existentes no Android.</p><div class="actions"><button id="advance">Avançar 30 segundos</button><button id="finish">Simular recompensa e fechar</button><button id="fail">Simular falha</button><button id="close">Fechar sem recompensa</button></div></section>
+<details><summary>Snapshot recebido</summary><pre id="snapshot"></pre></details>
+<dialog id="notice" aria-labelledby="notice-title"><h2 id="notice-title">Tempo acabando</h2><p id="notice-message"></p><div class="actions"><button id="notice-watch" class="primary">Assistir anúncio</button><button id="notice-close">Agora não</button></div></dialog>
+<script src="../../sdk/vtunnel-sdk.js"></script><script src="../../sdk/vtunnel-sdk.simulator.js"></script>
+<script>
+const sim = VTunnelSDKSimulator.installVTunnelSDKSimulator({ state: { vpnState: 'CONNECTED', remainingConnectionTime: 61, ads: { warningSeconds: 30, graceUsed: true, nativeUi: { warningPrompt: false, expiredPrompt: false, rewardedPrompt: false, rewardedLoading: false } } } });
+const sdk = new VTunnelSDK();
+const $ = id => document.getElementById(id);
+const simulated = !sim.isBlockedByWebView();
+$('sim-controls').hidden = !simulated;
+const subscriptions = [];
+function render() {
+  if (!sdk.ads.isSupported()) { $('state').textContent = 'Atualize o APK para usar a integração completa de Ads.'; return; }
+  const state = sdk.ads.getState(); if (!state) return;
+  $('time').textContent = state.timerText;
+  $('connection').textContent = state.vpnConnected ? 'VPN conectada' : 'VPN desconectada';
+  $('offer').textContent = `Cada recompensa adiciona ${state.rewardSeconds / 60} minutos de conexão.`;
+  $('watch').disabled = !state.enabled || state.rewarded.busy;
+  $('cancel').hidden = !state.rewarded.busy || !['LOADING', 'READY'].includes(state.rewarded.state);
+  $('snapshot').textContent = JSON.stringify(state, null, 2);
+}
+function notice(expired) {
+  $('notice-title').textContent = expired ? 'Tempo esgotado' : 'Tempo acabando';
+  $('notice-message').textContent = expired ? 'A sessão foi encerrada. Assista a um anúncio para ganhar tempo antes de conectar novamente.' : 'Você pode assistir a um anúncio para continuar com mais tempo.';
+  if (!$('notice').open) $('notice').showModal();
+}
+$('watch').onclick = () => sdk.ads.showRewarded();
+$('cancel').onclick = () => sdk.ads.cancelRewarded();
+$('notice-watch').onclick = () => { $('notice').close(); sdk.ads.showRewarded(); };
+$('notice-close').onclick = () => $('notice').close();
+subscriptions.push(sdk.on('adsTimerUpdated', render));
+subscriptions.push(sdk.on('adsTimeWarning', () => notice(false)));
+subscriptions.push(sdk.on('adsTimeExpired', () => notice(true)));
+subscriptions.push(sdk.on('adsRewardedState', ({ payload }) => {
+  const labels = { LOADING: 'Preparando anúncio…', READY: 'Anúncio disponível.', OPENING: 'Abrindo anúncio…', SHOWING: 'Anúncio em exibição.', REWARDED: 'Recompensa confirmada pelo Android.', CLOSED: payload.rewardEarned ? 'Anúncio concluído. Seu tempo foi atualizado.' : 'Anúncio fechado sem recompensa.', FAILED: payload.error || 'Não foi possível exibir o anúncio.', CANCELLED: 'Espera cancelada.', REJECTED: 'Já existe uma solicitação em andamento.' };
+  $('state').textContent = labels[payload.state] || 'Pronto.'; render();
+}));
+$('advance').onclick = () => { sim.tickAds(30); render(); };
+$('finish').onclick = () => { sim.simulateRewardedResult('ready'); sim.simulateRewardedResult('shown'); sim.simulateRewardedResult('rewarded'); sim.simulateRewardedResult('closed'); };
+$('fail').onclick = () => sim.simulateRewardedResult('failed', 'Falha de carregamento simulada');
+$('close').onclick = () => { sim.simulateRewardedResult('shown'); sim.simulateRewardedResult('closed'); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+window.addEventListener('pagehide', () => { subscriptions.forEach(off => off()); sdk.destroy(); sim.uninstall(); }, { once: true });
+render();
+</script></main></body></html>

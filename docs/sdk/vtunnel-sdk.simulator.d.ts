@@ -17,6 +17,7 @@ import type {
   VTunnelPendingImport,
   VTunnelSemanticEventName,
   VTunnelStatsSnapshot,
+  VTunnelAdsState,
   VTunnelVPNState,
   VTunnelCustomDnsConfig,
   VTunnelDnsPreset,
@@ -46,6 +47,7 @@ export interface VTunnelSDKSimulatorState {
   networkName: string | null;
   pingResult: string | null;
   adsEnabled: boolean;
+  ads: Pick<VTunnelAdsState, 'initialSeconds' | 'rewardSeconds' | 'warningSeconds' | 'graceUsed' | 'nativeUi'> & { rewarded: Omit<VTunnelAdsState['rewarded'], 'remainingSeconds' | 'rewardSeconds'> };
   remainingConnectionTime: number;
   remainingConnectionTimerText: string;
   lastVpnError: string | null;
@@ -161,6 +163,9 @@ export interface VTunnelSDKSimulatorController {
 
   getBridgeObject(objectName: VTunnelBridgeObjectName | (string & {})): unknown;
 
+  /** Advances a requested ad without granting time until the rewarded outcome. */
+  simulateRewardedResult(result: 'ready' | 'shown' | 'rewarded' | 'closed' | 'failed', error?: string): void;
+  tickAds(seconds?: number): void;
   /** Simulates a vt:// link or clipboard payload arriving (emits configImport "pending"). */
   simulateConfigImport(
     configs?: Array<Partial<Omit<VTunnelConfigImportItem, 'id'>>>,
